@@ -58,17 +58,17 @@ const openConnection = async (
       name: "Application",
     });
     connection = expressApp.listen(config.PORT, () => {
-      mongoose
-        .connect(config.DATABASE_URL, {
-          autoCreate: true,
-        })
-        .then(() => {
-          Logger.info("ENV config::", config);
-          Logger.info("Mongodb connected", {
-            name: "Application",
-          });
+      // mongoose
+      //   .connect(config.DATABASE_URL, {
+      //     autoCreate: true,
+      //   })
+      //   .then(() => {
+      //     Logger.info("ENV config::", config);
+      //     Logger.info("Mongodb connected", {
+      //       name: "Application",
+      //     });
           resolve(connection.address() as AddressInfo);
-        });
+        // });
     });
   });
 };
