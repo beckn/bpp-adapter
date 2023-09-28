@@ -17,7 +17,7 @@ const bppHeaders = {
 };
 const webhookCall = (data: any,action:string) => Promise.all(
   
-    data.map((value: any) => axios.post(`${config.BPP_URL}/${action}`, value,{header:bppHeaders))
+    data.map(async (value: any) => await axios.post(`${config.BPP_URL}/${action}`, value,{header:bppHeaders))
 )
 
 
