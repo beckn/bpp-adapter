@@ -12,12 +12,11 @@ import AppError from "./library/exception";
 import Logger from "./library/logger";
 
 
-import defineSearchRoutes from "./resources/search/search.route";
 
 import defineHealthRoutes from "./resources/health/health.route";
 
-import defineSelectRoutes from "./resources/select/select.route";
-import defineInitRoutes from "./resources/init/init.route";
+import defineBppHandlerRoutes from "./resources/bppHandler/bppHandler.route";
+
 
 let connection: Server;
 
@@ -28,9 +27,9 @@ export const startAppServer = async (): Promise<AddressInfo> => {
   expressApp.use(express.json({ limit: "50mb" }));
 
   defineHealthRoutes(expressApp)
-  defineSearchRoutes(expressApp);
-  defineSelectRoutes(expressApp)
-  defineInitRoutes(expressApp)
+  
+  defineBppHandlerRoutes(expressApp)
+
 
   expressApp.use((request, response, next) => {
     try {

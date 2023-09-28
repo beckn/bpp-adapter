@@ -17,8 +17,12 @@ const envSchema = z.object({
     .string()
     .default("3000")
     .transform((str) => parseInt(str, 10)),
+    STRAPI_API: z.string(),
+    API_TOKEN: z.string(),
+    ECOMMERCE:z.string(),
+    APPOINTMENT:z.string()
 
-  DATABASE_URL: z.string().describe("mongo db url"),
+ // DATABASE_URL: z.string().describe("mongo db url"),
 
   
 });
@@ -28,8 +32,10 @@ const envVars = envSchema.parse(process.env);
 const config = {
   NODE_ENV: envVars.NODE_ENV,
   PORT: envVars.PORT,
-
-  DATABASE_URL: envVars.DATABASE_URL,
+ STRAPI_API:envVars.STRAPI_API,
+ API_TOKEN:envVars.API_TOKEN,
+ ECOMMERCE:envVars.ECOMMERCE,
+APPOINTMENT:envVars.APPOINTMENT
 
  };
 

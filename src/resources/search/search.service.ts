@@ -1,26 +1,10 @@
 import httpStatus from "http-status";
-
-import AppError from "../../library/exception";
-import axiosInstance from "axios";
-import https from "https";
-import qs from "qs";
-
-const axios = axiosInstance.create({
-  httpsAgent: new https.Agent({
-    rejectUnauthorized: false,
-  }),
-});
-
-const apiUrl = "https://strapi-bpp.becknprotocol.io/graphql";
-
-const apiToken =
-  "1b8e2e1f6ce05a6cdae76863c630c6656be19450efdc8fa7196774cb368065c8fbee1b4cdfe8c39fb46d207b7241dc64ece560bc95270c3376dcd7fbe24cf44cd3869737ffcce3bbcb992e3313a183f20a18cbb73fbea9f696a3c852dcc55f4ed70be2f74983f609f7117a2f53c587408838d908a50f0a9597215fb7880111b3";
-
-const headers = {
-  Authorization: `Bearer ${apiToken}`,
-  "Content-Type": "application/JSON",
-};
-
+import { makeGraphQLRequest } from "../utils/api";
+import { queryFields } from "../../template/retail/search/searchItemProvider.template";
+import { queryTable } from "../../template/retail/search/searchItemProvider.template";
+import { queryFieldsCatTax } from "../../template/retail/search/searchCatTax.template";
+import { queryTableCatTax } from "../../template/retail/search/searchCatTax.template";
+import config from "../../config";
 const generateItemFilterQuery = (item: any) => {
   const query = item.descriptor.name
     .split(",")
@@ -67,41 +51,33 @@ const catAttrFilter = async (filter: any, domainFilterQuery: string) => {
     .map((str: string) => `"${str.trim()}"`)
     .join(",")} ]}})`;
 
-  const categoryResponse = await axios
-    .post(
-      apiUrl,
+  const queryStr = `{${categoryQuery}
+  {
+    data
+    {
+      id
+      attributes
       {
-        query: `{${categoryQuery}
-            {
-              data
-              {
-                id
-                attributes
-                {
-                  value
-                  parent_id{
-                    data
-                    
-                    {
-                      id
-                      attributes{
-                        value
-                      }
-                    }
-                  }
-                }
-              }
+        value
+        parent_id{
+          data
+          
+          {
+            id
+            attributes{
+              value
             }
-          }`,
-      },
-      {
-        headers,
+          }
+        }
       }
-    )
-    .then((res) => res.data)
+    }
+  }
+}`;
+  const categoryResponse = await makeGraphQLRequest(queryStr)
     .then((res) => res.data)
     .then((res) => res.categories)
     .then((res) => res.data);
+  console.log("Category Response", categoryResponse);
 
   const catIds = categoryResponse.reduce((accum: number[], val: any) => {
     let ids = [val.id];
@@ -111,105 +87,9 @@ const catAttrFilter = async (filter: any, domainFilterQuery: string) => {
     return accum.concat(ids);
   }, []);
 
-  const queryFields = `
-    {
-      data
-      {
-        id
-        attributes{
-          taxanomy
-          taxanomy_id
-          item_id
-          {
-            data
-            {
-              id
-              attributes
-              {
-                name
-                long_desc
-                short_desc
-                code
-                provider_id
-                {
-                  data{
-                    id
-                    attributes
-                    {
-                      provider_id
-                      provider_uri
-                      provider_name
-                      short_desc
-                      long_desc
-                      domain_id{
-                        data
-                        {
-                          id
-                          attributes
-                          {
-                            DomainName
-                          }
-                        }
-                        
-                      }
-                      location_id{
-                        data{
-                          id
-                          attributes
-                          {
-                            address
-                            city
-                            state
-                            country
-                            zip
-                          }
-                        }
-                      }
-                      logo{
-                        data{
-                          id
-                          attributes
-                          {url}
-                        }
-                      }
-                
-                      
-                    }
-                  }
-                }
-                sc_retail_product{
-                  data
-                  {
-                    id
-                    attributes
-                    {
-                      
-                      sku
-                      virtual
-                      downloadable
-                      min_price
-                      max_price
-                      on_sale
-                      stock_status
-                      stock_quantity
-                      rating_count
-                      average_rating
-                      tax_class
-                      tax_status
-                      total_sales
-                      currency
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }`;
 
-  const query = `
-      catAttrTagRelations(filters: 
+  const queryFilters = `
+      filters: 
         {
           taxanomy: { contains:"TAG" } 
           taxanomy_id:{ in: [${catIds
@@ -229,24 +109,18 @@ const catAttrFilter = async (filter: any, domainFilterQuery: string) => {
             {${domainFilterQuery}}
           ]
         }
-      )
+      
   `;
 
-  console.log(query);
-
-  const response = await axios
-    .post(
-      apiUrl,
-      {
-        query: `{${query}${queryFields}}`,
-      },
-      {
-        headers,
-      }
+  const query = `query {
+    ${queryTableCatTax} (
+      ${queryFilters}
     )
-    .then((res) => res.data);
+    ${queryFieldsCatTax}
+  }`;
+  const response = await makeGraphQLRequest(query)
 
-  return response;
+  return response
 };
 
 const scProductFilter = async (filter: any, domainFilterQuery: string) => {
@@ -255,114 +129,100 @@ const scProductFilter = async (filter: any, domainFilterQuery: string) => {
     filter.provider ? generateProviderFilterQuery(filter.provider) : ``,
     filter.item ? generateItemFilterQuery(filter.item) : ``
   );
-  const queryFields = `{
-    data {
-      id
-      attributes{
-        sku
-        downloadable
-        min_price
-        max_price
-        on_sale
-        stock_quantity
-        stock_status
-        rating_count
-        average_rating
-        total_sales
-        tax_class
-        virtual
-        item_id{
-          data{
-            id
-            attributes{
-              name
-              short_desc
-              long_desc
-              provider_id{
-                data{
-                  id
-                  attributes{
-                    provider_name
-                    short_desc
-                    long_desc
-                    domain_id{
-                      data{
-                        id
-                        attributes{
-                          DomainName
-                        }
-                      }
-                    }
-                    location_id{
-                      data{
-                        id
-                        attributes{
-                          address
-                          city
-                          state
-                          country
-                          zip
-                        }
-                      }
-                    }
-                    logo{
-                      data
-                      {
-                        id
-                        attributes{
-                          url
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }`;
+
+  //     id
+  //     attributes{
+  //       sku
+  //       downloadable
+  //       min_price
+  //       max_price
+  //       on_sale
+  //       stock_quantity
+  //       stock_status
+  //       rating_count
+  //       average_rating
+  //       total_sales
+  //       tax_class
+  //       virtual
+  //       item_id{
+  //         data{
+  //           id
+  //           attributes{
+  //             name
+  //             short_desc
+  //             long_desc
+  //             provider_id{
+  //               data{
+  //                 id
+  //                 attributes{
+  //                   provider_name
+  //                   short_desc
+  //                   long_desc
+  //                   domain_id{
+  //                     data{
+  //                       id
+  //                       attributes{
+  //                         DomainName
+  //                       }
+  //                     }
+  //                   }
+  //                   location_id{
+  //                     data{
+  //                       id
+  //                       attributes{
+  //                         address
+  //                         city
+  //                         state
+  //                         country
+  //                         zip
+  //                       }
+  //                     }
+  //                   }
+  //                   logo{
+  //                     data
+  //                     {
+  //                       id
+  //                       attributes{
+  //                         url
+  //                       }
+  //                     }
+  //                   }
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }`;
 
   const query = `query {
-    scProducts (
+    ${queryTable} (
       ${queryFilters}
     )
     ${queryFields}
   }`;
 
-  const response = await axios
-    .post(
-      apiUrl,
-      {
-        query,
-      },
-      {
-        headers,
-      }
-    )
-    .then((res) => res.data);
+  const response = await makeGraphQLRequest(query);
+  console.log("responsE::", response);
 
-  // return response;
-  return response.data.scProducts.data;
+  return response;
 };
 
 export const search = async (filter: any) => {
   try {
-    const domainFilterQuery = `item_id:{provider_id:{domain_id:{DomainName:{eq:"${filter.context.domain}"}}}}`;
-    console.log("filter.message.intent", filter.message.intent);
-    const category = filter.message.intent.category;
-    if (category) {
-      return catAttrFilter(filter.message.intent, domainFilterQuery);
-    } else {
-      const queryResponse = await scProductFilter(
-        filter.message.intent,
-        domainFilterQuery
-      );
+    const commerceWorkFlow=config.ECOMMERCE.split(',')
+    const appointmentWorkFlow=config.APPOINTMENT.split(',')
 
-      // return queryResponse;
-      return {
-        responseData: queryResponse.map((res: any) => {
+    if(commerceWorkFlow.includes(filter.context.domain))
+    {
+      const domainFilterQuery = `item_id:{provider_id:{domain_id:{DomainName:{eq:"${filter.context.domain}"}}}}`;
+      const category = filter.message.intent.category;
+      if (category) {
+        const result =  await catAttrFilter(filter.message.intent, domainFilterQuery);
+        const queryResponse =result.data.catAttrTagRelations.data
+        return queryResponse.map((res: any) => {
           const item_id = res.attributes.item_id;
           return {
             context: filter.context,
@@ -372,9 +232,11 @@ export const search = async (filter: any) => {
                   name: item_id.data.attributes.name,
                   short_desc: item_id.data.attributes.short_desc,
                   long_desc: item_id.data.attributes.long_desc,
-                  additional_desc: item_id.data.attributes.additional_desc
-                    ? item_id.data.attributes.additional_desc
-                    : "",
+                  additional_desc: {
+                    url: item_id.data.attributes.additional_desc
+                      ? item_id.data.attributes.additional_desc
+                      : "",
+                  },
                   images: [
                     {
                       url: item_id.data.attributes.provider_id.data.attributes
@@ -410,15 +272,11 @@ export const search = async (filter: any) => {
                       items: [
                         {
                           item: {
-                            rating:
-                              res.attributes.average_rating,
-                            quantity:
-                              res.attributes.stock_quantity,
+                            rating: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.rating_count,
+                            quantity: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.stock_quantity,
                             price: {
-                              minimum_value:
-                                res.attributes.min_price,
-                              maximum_value:
-                                res.attributes.max_price,
+                              minimum_value: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.min_price,
+                              maximum_value: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.max_price,
                             },
                             descriptor: {
                               name: item_id.data.attributes.name,
@@ -431,16 +289,97 @@ export const search = async (filter: any) => {
                     },
                   },
                 ],
+              }
+            }
+          }
+        })
+      } 
+      else {
+       
+        const result = await scProductFilter(
+          filter.message.intent,
+          domainFilterQuery
+        );
+        const queryResponse = result.data.scProducts.data;
+        
+        filter.context["action"] = "on_search";
+        return {
+          responseData: queryResponse.map((res: any) => {
+            const item_id = res.attributes.item_id;
+            return {
+              context: filter.context,
+              message: {
+                catalog: {
+                  descriptor: {
+                    name: item_id.data.attributes.name,
+                    short_desc: item_id.data.attributes.short_desc,
+                    long_desc: item_id.data.attributes.long_desc,
+                    additional_desc: {
+                      url: item_id.data.attributes.additional_desc
+                        ? item_id.data.attributes.additional_desc
+                        : "",
+                    },
+                    images: [
+                      {
+                        url: item_id.data.attributes.provider_id.data.attributes
+                          .logo.data.attributes.url,
+                      },
+                    ],
+                  },
+                  providers: [
+                    {
+                      Provider: {
+                        id: item_id.data.attributes.provider_id.data.id,
+                        descriptor: {
+                          name: item_id.data.attributes.provider_id.data
+                            .attributes.provider_name,
+                        },
+                        short_desc:
+                          item_id.data.attributes.provider_id.data.attributes
+                            .short_desc,
+                        long_desc:
+                          item_id.data.attributes.provider_id.data.attributes
+                            .long_desc,
+                        additional_desc: item_id.data.attributes.provider_id.data
+                          .attributes.additional_desc
+                          ? item_id.data.attributes.additional_desc
+                          : "",
+                        categories: item_id.data.attributes.provider_id.data
+                          .attributes.category
+                          ? item_id.data.attributes.category
+                          : "",
+                        locations:
+                          item_id.data.attributes.provider_id.data.attributes
+                            .location_id.data.attributes,
+                        items: [
+                          {
+                            item: {
+                              rating: res.attributes.average_rating,
+                              quantity: res.attributes.stock_quantity,
+                              price: {
+                                minimum_value: res.attributes.min_price,
+                                maximum_value: res.attributes.max_price,
+                              },
+                              descriptor: {
+                                name: item_id.data.attributes.name,
+                                short_desc: item_id.data.attributes.short_desc,
+                                long_desc: item_id.data.attributes.long_desc,
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
               },
-            },
-          };
-        }),
-      };
+            };
+          }),
+        };
+      }
     }
-  } catch (error) {
-    console.log(error);
-    throw new Error("SONETHING WENT WRONG");
+   
+  } catch (error: any) {
+    throw new Error(error.message);
   }
 };
-
-
