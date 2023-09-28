@@ -3,8 +3,14 @@ import httpStatus from "http-status";
 import * as searchService from "../search/search.service";
 import * as selectService from "../select/select.service";
 import * as initService from "../init/init.service";
-import axios from "axios";
+import axiosInstance from "axios";
+import https from 'https'
 import config from "../../config";
+const axios = axiosInstance.create({
+  httpsAgent: new https.Agent({
+    rejectUnauthorized: false,
+  }),
+});
 
 const webhookCall = (data: any,action:string) => Promise.all(
   
