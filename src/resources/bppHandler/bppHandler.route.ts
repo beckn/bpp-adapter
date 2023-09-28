@@ -11,10 +11,13 @@ const axios = axiosInstance.create({
     rejectUnauthorized: false,
   }),
 });
-
+const bppHeaders = {
+  
+  "Content-Type": "application/json",
+};
 const webhookCall = (data: any,action:string) => Promise.all(
   
-    data.map((value: any) => axios.post(`${config.BPP_URL}/${action}`, value))
+    data.map((value: any) => axios.post(`${config.BPP_URL}/${action}`, value,{header:bppHeaders))
 )
 
 
