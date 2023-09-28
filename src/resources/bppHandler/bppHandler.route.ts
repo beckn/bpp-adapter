@@ -4,10 +4,11 @@ import * as searchService from "../search/search.service";
 import * as selectService from "../select/select.service";
 import * as initService from "../init/init.service";
 import axios from "axios";
-
+import config from "../../config";
 
 const webhookCall = (data: any,action:string) => Promise.all(
-    data.map((value: any) => axios.post(`http://127.0.0.1:6001/${action}`, value))
+  
+    data.map((value: any) => axios.post(`${config.BPP_URL}/${action}`, value))
 )
 
 
@@ -23,7 +24,8 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
             if(filter.context.action==="search"){
                 responseAction="on_search"
                 const result = await searchService.search(filter);
-                // await webhookCall(result,responseAction)
+                console.log(result)
+                 //await webhookCall(result.responseData,responseAction)
                 response.status(httpStatus.OK).send(result.responseData);
             }
             if(filter.context.action==="select"){

@@ -303,6 +303,10 @@ export const search = async (filter: any) => {
         const queryResponse = result.data.scProducts.data;
         
         filter.context["action"] = "on_search";
+           
+        filter.context["bpp_id"] = "beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+           
+        filter.context["bpp_uri"] = "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
         return {
           responseData: queryResponse.map((res: any) => {
             const item_id = res.attributes.item_id;
