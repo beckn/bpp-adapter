@@ -1,9 +1,9 @@
 import httpStatus from "http-status";
 import { makeGraphQLRequest } from "../utils/api";
-import { queryFields } from "../../template/retail/search/searchItemProvider.template";
-import { queryTable } from "../../template/retail/search/searchItemProvider.template";
-import { queryFieldsCatTax } from "../../template/retail/search/searchCatTax.template";
-import { queryTableCatTax } from "../../template/retail/search/searchCatTax.template";
+import { queryFields } from "../../template/ecommerce/search/searchItemProvider.template";
+import { queryTable } from "../../template/ecommerce/search/searchItemProvider.template";
+import { queryFieldsCatTax } from "../../template/ecommerce/search/searchCatTax.template";
+import { queryTableCatTax } from "../../template/ecommerce/search/searchCatTax.template";
 import config from "../../config";
 const generateItemFilterQuery = (item: any) => {
   const query = item.descriptor.name
@@ -377,6 +377,9 @@ export const search = async (filter: any) => {
           }),
         };
       }
+    }
+    else{
+      
     }
    
   } catch (error: any) {
