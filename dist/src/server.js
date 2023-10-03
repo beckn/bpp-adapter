@@ -14,20 +14,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startAppServer = void 0;
 const express_1 = __importDefault(require("express"));
-const mongoose_1 = __importDefault(require("mongoose"));
 const http_status_1 = __importDefault(require("http-status"));
 const config_1 = __importDefault(require("./config"));
 const exception_1 = __importDefault(require("./library/exception"));
 const logger_1 = __importDefault(require("./library/logger"));
-const search_route_1 = __importDefault(require("./resources/search/search.route"));
 const health_route_1 = __importDefault(require("./resources/health/health.route"));
+const bppHandler_route_1 = __importDefault(require("./resources/bppHandler/bppHandler.route"));
 let connection;
 const startAppServer = () => __awaiter(void 0, void 0, void 0, function* () {
     const expressApp = (0, express_1.default)();
     expressApp.use(express_1.default.urlencoded({ extended: true, limit: "50mb" }));
     expressApp.use(express_1.default.json({ limit: "50mb" }));
     (0, health_route_1.default)(expressApp);
-    (0, search_route_1.default)(expressApp);
+    (0, bppHandler_route_1.default)(expressApp);
     expressApp.use((request, response, next) => {
         try {
             throw new exception_1.default("ROUTE_NOT_FOUND", `Request URL (${request.originalUrl}) is not available`, http_status_1.default.NOT_FOUND);
@@ -47,17 +46,17 @@ const openConnection = (expressApp) => __awaiter(void 0, void 0, void 0, functio
             name: "Application",
         });
         connection = expressApp.listen(config_1.default.PORT, () => {
-            mongoose_1.default
-                .connect(config_1.default.DATABASE_URL, {
-                autoCreate: true,
-            })
-                .then(() => {
-                logger_1.default.info("ENV config::", config_1.default);
-                logger_1.default.info("Mongodb connected", {
-                    name: "Application",
-                });
-                resolve(connection.address());
-            });
+            // mongoose
+            //   .connect(config.DATABASE_URL, {
+            //     autoCreate: true,
+            //   })
+            //   .then(() => {
+            //     Logger.info("ENV config::", config);
+            //     Logger.info("Mongodb connected", {
+            //       name: "Application",
+            //     });
+            resolve(connection.address());
+            // });
         });
     });
 });

@@ -20,13 +20,22 @@ const envSchema = zod_1.z.object({
         .string()
         .default("3000")
         .transform((str) => parseInt(str, 10)),
-    DATABASE_URL: zod_1.z.string().describe("mongo db url"),
+    STRAPI_API: zod_1.z.string(),
+    API_TOKEN: zod_1.z.string(),
+    ECOMMERCE: zod_1.z.string(),
+    APPOINTMENT: zod_1.z.string(),
+    BPP_URL: zod_1.z.string()
+    // DATABASE_URL: z.string().describe("mongo db url"),
 });
 const envVars = envSchema.parse(process.env);
 const config = {
     NODE_ENV: envVars.NODE_ENV,
     PORT: envVars.PORT,
-    DATABASE_URL: envVars.DATABASE_URL,
+    STRAPI_API: envVars.STRAPI_API,
+    API_TOKEN: envVars.API_TOKEN,
+    ECOMMERCE: envVars.ECOMMERCE,
+    APPOINTMENT: envVars.APPOINTMENT,
+    BPP_URL: envVars.BPP_URL
 };
 exports.default = config;
 //# sourceMappingURL=index.js.map

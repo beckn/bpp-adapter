@@ -12,20 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.search1 = exports.search = void 0;
-const axios_1 = __importDefault(require("axios"));
-const https_1 = __importDefault(require("https"));
-const axios = axios_1.default.create({
-    httpsAgent: new https_1.default.Agent({
-        rejectUnauthorized: false,
-    }),
-});
-const apiUrl = "https://strapi.becknprotocol.io/graphql";
-const apiToken = "1b8e2e1f6ce05a6cdae76863c630c6656be19450efdc8fa7196774cb368065c8fbee1b4cdfe8c39fb46d207b7241dc64ece560bc95270c3376dcd7fbe24cf44cd3869737ffcce3bbcb992e3313a183f20a18cbb73fbea9f696a3c852dcc55f4ed70be2f74983f609f7117a2f53c587408838d908a50f0a9597215fb7880111b3";
-const headers = {
-    Authorization: `Bearer ${apiToken}`,
-    "Content-Type": "application/JSON",
-};
+exports.search = void 0;
+const api_1 = require("../utils/api");
+const searchItemProvider_template_1 = require("../../template/ecommerce/search/searchItemProvider.template");
+const searchItemProvider_template_2 = require("../../template/ecommerce/search/searchItemProvider.template");
+const searchCatTax_template_1 = require("../../template/ecommerce/search/searchCatTax.template");
+const searchCatTax_template_2 = require("../../template/ecommerce/search/searchCatTax.template");
+const config_1 = __importDefault(require("../../config"));
 const generateItemFilterQuery = (item) => {
     const query = item.descriptor.name
         .split(",")
@@ -64,37 +57,33 @@ const catAttrFilter = (filter, domainFilterQuery) => __awaiter(void 0, void 0, v
         .split(",")
         .map((str) => `"${str.trim()}"`)
         .join(",")} ]}})`;
-    const categoryResponse = yield axios
-        .post(apiUrl, {
-        query: `{${categoryQuery}
-            {
-              data
-              {
-                id
-                attributes
-                {
-                  value
-                  parent_id{
-                    data
-                    
-                    {
-                      id
-                      attributes{
-                        value
-                      }
-                    }
-                  }
-                }
-              }
+    const queryStr = `{${categoryQuery}
+  {
+    data
+    {
+      id
+      attributes
+      {
+        value
+        parent_id{
+          data
+          
+          {
+            id
+            attributes{
+              value
             }
-          }`,
-    }, {
-        headers,
-    })
-        .then((res) => res.data)
+          }
+        }
+      }
+    }
+  }
+}`;
+    const categoryResponse = yield (0, api_1.makeGraphQLRequest)(queryStr)
         .then((res) => res.data)
         .then((res) => res.categories)
         .then((res) => res.data);
+    console.log("Category Response", categoryResponse);
     const catIds = categoryResponse.reduce((accum, val) => {
         let ids = [val.id];
         if (val.attributes.parent_id.data) {
@@ -102,104 +91,8 @@ const catAttrFilter = (filter, domainFilterQuery) => __awaiter(void 0, void 0, v
         }
         return accum.concat(ids);
     }, []);
-    const queryFields = `
-    {
-      data
-      {
-        id
-        attributes{
-          taxanomy
-          taxanomy_id
-          item_id
-          {
-            data
-            {
-              id
-              attributes
-              {
-                name
-                long_desc
-                short_desc
-                code
-                provider_id
-                {
-                  data{
-                    id
-                    attributes
-                    {
-                      provider_id
-                      provider_uri
-                      provider_name
-                      short_desc
-                      long_desc
-                      domain_id{
-                        data
-                        {
-                          id
-                          attributes
-                          {
-                            DomainName
-                          }
-                        }
-                        
-                      }
-                      location_id{
-                        data{
-                          id
-                          attributes
-                          {
-                            address
-                            city
-                            state
-                            country
-                            zip
-                          }
-                        }
-                      }
-                      logo{
-                        data{
-                          id
-                          attributes
-                          {url}
-                        }
-                      }
-                
-                      
-                    }
-                  }
-                }
-                sc_retail_product{
-                  data
-                  {
-                    id
-                    attributes
-                    {
-                      
-                      sku
-                      virtual
-                      downloadable
-                      min_price
-                      max_price
-                      on_sale
-                      stock_status
-                      stock_quantity
-                      rating_count
-                      average_rating
-                      tax_class
-                      tax_status
-                      total_sales
-                      currency
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }`;
-    const query = `
-      catAttrTagRelations(filters: 
+    const queryFilters = `
+      filters: 
         {
           taxanomy: { contains:"TAG" } 
           taxanomy_id:{ in: [${catIds
@@ -215,117 +108,106 @@ const catAttrFilter = (filter, domainFilterQuery) => __awaiter(void 0, void 0, v
             {${domainFilterQuery}}
           ]
         }
-      )
+      
   `;
-    console.log(query);
-    const response = yield axios
-        .post(apiUrl, {
-        query: `{${query}${queryFields}}`,
-    }, {
-        headers,
-    })
-        .then((res) => res.data);
+    const query = `query {
+    ${searchCatTax_template_2.queryTableCatTax} (
+      ${queryFilters}
+    )
+    ${searchCatTax_template_1.queryFieldsCatTax}
+  }`;
+    const response = yield (0, api_1.makeGraphQLRequest)(query);
     return response;
 });
 const scProductFilter = (filter, domainFilterQuery) => __awaiter(void 0, void 0, void 0, function* () {
     const queryFilters = generateItemProviderQueryCombo(domainFilterQuery, filter.provider ? generateProviderFilterQuery(filter.provider) : ``, filter.item ? generateItemFilterQuery(filter.item) : ``);
-    const queryFields = `{
-    data {
-      id
-      attributes{
-        sku
-        downloadable
-        min_price
-        max_price
-        on_sale
-        stock_quantity
-        stock_status
-        rating_count
-        average_rating
-        total_sales
-        tax_class
-        virtual
-        item_id{
-          data{
-            id
-            attributes{
-              name
-              short_desc
-              long_desc
-              provider_id{
-                data{
-                  id
-                  attributes{
-                    provider_name
-                    short_desc
-                    long_desc
-                    domain_id{
-                      data{
-                        id
-                        attributes{
-                          DomainName
-                        }
-                      }
-                    }
-                    location_id{
-                      data{
-                        id
-                        attributes{
-                          address
-                          city
-                          state
-                          country
-                          zip
-                        }
-                      }
-                    }
-                    logo{
-                      data
-                      {
-                        id
-                        attributes{
-                          url
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }`;
+    //     id
+    //     attributes{
+    //       sku
+    //       downloadable
+    //       min_price
+    //       max_price
+    //       on_sale
+    //       stock_quantity
+    //       stock_status
+    //       rating_count
+    //       average_rating
+    //       total_sales
+    //       tax_class
+    //       virtual
+    //       item_id{
+    //         data{
+    //           id
+    //           attributes{
+    //             name
+    //             short_desc
+    //             long_desc
+    //             provider_id{
+    //               data{
+    //                 id
+    //                 attributes{
+    //                   provider_name
+    //                   short_desc
+    //                   long_desc
+    //                   domain_id{
+    //                     data{
+    //                       id
+    //                       attributes{
+    //                         DomainName
+    //                       }
+    //                     }
+    //                   }
+    //                   location_id{
+    //                     data{
+    //                       id
+    //                       attributes{
+    //                         address
+    //                         city
+    //                         state
+    //                         country
+    //                         zip
+    //                       }
+    //                     }
+    //                   }
+    //                   logo{
+    //                     data
+    //                     {
+    //                       id
+    //                       attributes{
+    //                         url
+    //                       }
+    //                     }
+    //                   }
+    //                 }
+    //               }
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }`;
     const query = `query {
-    scProducts (
+    ${searchItemProvider_template_2.queryTable} (
       ${queryFilters}
     )
-    ${queryFields}
+    ${searchItemProvider_template_1.queryFields}
   }`;
-    const response = yield axios
-        .post(apiUrl, {
-        query,
-    }, {
-        headers,
-    })
-        .then((res) => res.data);
-    // return response;
-    return response.data.scProducts.data;
+    const response = yield (0, api_1.makeGraphQLRequest)(query);
+    console.log("responsE::", response);
+    return response;
 });
 const search = (filter) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const domainFilterQuery = `item_id:{provider_id:{domain_id:{DomainName:{eq:"${filter.context.domain}"}}}}`;
-        console.log("filter.message.intent", filter.message.intent);
-        const category = filter.message.intent.category;
-        if (category) {
-            return catAttrFilter(filter.message.intent, domainFilterQuery);
-        }
-        else {
-            const queryResponse = yield scProductFilter(filter.message.intent, domainFilterQuery);
-            // return queryResponse;
-            return {
-                responseData: queryResponse.map((res) => {
+        const commerceWorkFlow = config_1.default.ECOMMERCE.split(',');
+        const appointmentWorkFlow = config_1.default.APPOINTMENT.split(',');
+        if (commerceWorkFlow.includes(filter.context.domain)) {
+            const domainFilterQuery = `item_id:{provider_id:{domain_id:{DomainName:{eq:"${filter.context.domain}"}}}}`;
+            const category = filter.message.intent.category;
+            if (category) {
+                const result = yield catAttrFilter(filter.message.intent, domainFilterQuery);
+                const queryResponse = result.data.catAttrTagRelations.data;
+                return queryResponse.map((res) => {
                     const item_id = res.attributes.item_id;
                     return {
                         context: filter.context,
@@ -335,9 +217,11 @@ const search = (filter) => __awaiter(void 0, void 0, void 0, function* () {
                                     name: item_id.data.attributes.name,
                                     short_desc: item_id.data.attributes.short_desc,
                                     long_desc: item_id.data.attributes.long_desc,
-                                    additional_desc: item_id.data.attributes.additional_desc
-                                        ? item_id.data.attributes.additional_desc
-                                        : "",
+                                    additional_desc: {
+                                        url: item_id.data.attributes.additional_desc
+                                            ? item_id.data.attributes.additional_desc
+                                            : "",
+                                    },
                                     images: [
                                         {
                                             url: item_id.data.attributes.provider_id.data.attributes
@@ -370,11 +254,11 @@ const search = (filter) => __awaiter(void 0, void 0, void 0, function* () {
                                             items: [
                                                 {
                                                     item: {
-                                                        rating: res.attributes.average_rating,
-                                                        quantity: res.attributes.stock_quantity,
+                                                        rating: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.rating_count,
+                                                        quantity: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.stock_quantity,
                                                         price: {
-                                                            minimum_value: res.attributes.min_price,
-                                                            maximum_value: res.attributes.max_price,
+                                                            minimum_value: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.min_price,
+                                                            maximum_value: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.max_price,
                                                         },
                                                         descriptor: {
                                                             name: item_id.data.attributes.name,
@@ -387,232 +271,95 @@ const search = (filter) => __awaiter(void 0, void 0, void 0, function* () {
                                         },
                                     },
                                 ],
-                            },
-                        },
+                            }
+                        }
                     };
-                }),
-            };
+                });
+            }
+            else {
+                const result = yield scProductFilter(filter.message.intent, domainFilterQuery);
+                const queryResponse = result.data.scProducts.data;
+                filter.context["action"] = "on_search";
+                filter.context["bpp_id"] = "beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+                filter.context["bpp_uri"] = "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+                return {
+                    responseData: queryResponse.map((res) => {
+                        const item_id = res.attributes.item_id;
+                        return {
+                            context: filter.context,
+                            message: {
+                                catalog: {
+                                    descriptor: {
+                                        name: item_id.data.attributes.name,
+                                        short_desc: item_id.data.attributes.short_desc,
+                                        long_desc: item_id.data.attributes.long_desc,
+                                        additional_desc: {
+                                            url: item_id.data.attributes.additional_desc
+                                                ? item_id.data.attributes.additional_desc
+                                                : "",
+                                        },
+                                        images: [
+                                            {
+                                                url: item_id.data.attributes.provider_id.data.attributes
+                                                    .logo.data.attributes.url,
+                                            },
+                                        ],
+                                    },
+                                    providers: [
+                                        {
+                                            Provider: {
+                                                id: item_id.data.attributes.provider_id.data.id,
+                                                descriptor: {
+                                                    name: item_id.data.attributes.provider_id.data
+                                                        .attributes.provider_name,
+                                                },
+                                                short_desc: item_id.data.attributes.provider_id.data.attributes
+                                                    .short_desc,
+                                                long_desc: item_id.data.attributes.provider_id.data.attributes
+                                                    .long_desc,
+                                                additional_desc: item_id.data.attributes.provider_id.data
+                                                    .attributes.additional_desc
+                                                    ? item_id.data.attributes.additional_desc
+                                                    : "",
+                                                categories: item_id.data.attributes.provider_id.data
+                                                    .attributes.category
+                                                    ? item_id.data.attributes.category
+                                                    : "",
+                                                locations: item_id.data.attributes.provider_id.data.attributes
+                                                    .location_id.data.attributes,
+                                                items: [
+                                                    {
+                                                        item: {
+                                                            rating: res.attributes.average_rating,
+                                                            quantity: res.attributes.stock_quantity,
+                                                            price: {
+                                                                minimum_value: res.attributes.min_price,
+                                                                maximum_value: res.attributes.max_price,
+                                                            },
+                                                            descriptor: {
+                                                                name: item_id.data.attributes.name,
+                                                                short_desc: item_id.data.attributes.short_desc,
+                                                                long_desc: item_id.data.attributes.long_desc,
+                                                            },
+                                                        },
+                                                    },
+                                                ],
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        };
+                    }),
+                };
+            }
+        }
+        else {
         }
     }
     catch (error) {
-        console.log(error);
-        throw new Error("SONETHING WENT WRONG");
+        throw new Error(error.message);
     }
 });
 exports.search = search;
-const search1 = (filter) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const apiUrl = "https://strapi.becknprotocol.io/graphql";
-        const apiToken = "1b8e2e1f6ce05a6cdae76863c630c6656be19450efdc8fa7196774cb368065c8fbee1b4cdfe8c39fb46d207b7241dc64ece560bc95270c3376dcd7fbe24cf44cd3869737ffcce3bbcb992e3313a183f20a18cbb73fbea9f696a3c852dcc55f4ed70be2f74983f609f7117a2f53c587408838d908a50f0a9597215fb7880111b3";
-        const category = filter.message.intent.category;
-        if (category) {
-            const categoryResponse = yield axios
-                .post(apiUrl, {
-                query: `{
-            categories(filters:{value:{eq:"${category.descriptor.name}"}})
-            
-          }`,
-            }, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + apiToken,
-                },
-            })
-                .then((res) => res.data)
-                .then((res) => res.data)
-                .then((res) => res.categories)
-                .then((res) => res.data);
-            const catIds = categoryResponse.reduce((accum, val) => {
-                let ids = [val.id];
-                if (val.attributes.parent_id.data) {
-                    ids.push(val.attributes.parent_id.data.id);
-                }
-                return accum.concat(ids);
-            }, []);
-            const fullResponse = yield axios
-                .post(apiUrl, {}, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + apiToken,
-                },
-            })
-                .then((res) => res.data);
-            return fullResponse;
-        }
-        const item = filter.message.intent.item;
-        let itemFilterQuery = ``;
-        if (item) {
-            const query = item.descriptor.name
-                .split(",")
-                .map((name) => {
-                return `{item_id:{name:{contains:"${name}"}}}`;
-            })
-                .join(",");
-            itemFilterQuery = `or:[${query}]`;
-        }
-        const provider = filter.message.intent.provider;
-        let providerFilterQuery = ``;
-        if (provider) {
-            const query = provider.descriptor.name
-                .split(",")
-                .map((name) => {
-                return `{ item_id: { provider_id: { provider_name: { contains: "${name}" } } } }`;
-            })
-                .join(",");
-            providerFilterQuery = `or:[${query}]`;
-        }
-        const domainFilterQuery = `item_id:{provider_id:{domain_id:{DomainName:{eq:"${filter.context.domain}"}}}}`;
-        let filterQuery = ``;
-        if (providerFilterQuery === `` && itemFilterQuery === ``) {
-            filterQuery = `filters:{${domainFilterQuery}}`;
-        }
-        if (providerFilterQuery === `` && itemFilterQuery !== ``) {
-            filterQuery = `filters:{${domainFilterQuery} ${itemFilterQuery}}`;
-        }
-        if (providerFilterQuery !== `` && itemFilterQuery === ``) {
-            filterQuery = `filters:{${domainFilterQuery} ${providerFilterQuery}}`;
-        }
-        if (providerFilterQuery !== `` && itemFilterQuery !== ``) {
-            filterQuery = `filters:{${domainFilterQuery}and:[{${providerFilterQuery}},{${itemFilterQuery}}]}`;
-        }
-        console.log("filterQuery:::", filterQuery);
-        const query = `query {
-        scProducts (
-          ${filterQuery}
-        )
-        {
-          data {
-            id
-            attributes{
-              sku
-              downloadable
-              min_price
-              max_price
-              on_sale
-              stock_quantity
-              stock_status
-              rating_count
-              average_rating
-              total_sales
-              tax_class
-              virtual
-              item_id{
-                data{
-                  id
-                  attributes{
-                    name
-                    short_desc
-                    long_desc
-                    provider_id{
-                      data{
-                        id
-                        attributes{
-                          provider_name
-                          short_desc
-                          long_desc
-                          domain_id{
-                            data{
-                              id
-                              attributes{
-                                DomainName
-                              }
-                            }
-                          }
-                          location_id{
-                            data{
-                              id
-                              attributes{
-                                address
-                                city
-                                state
-                                country
-                                zip
-                              }
-                            }
-                          }
-                          logo{
-                            data
-                            {
-                              id
-                              attributes{
-                                url
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-  
-          }
-        }
-        }
-      }`;
-        const response = yield axios
-            .post(apiUrl, {
-            query,
-        }, {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + apiToken,
-            },
-        })
-            .then((res) => res.data);
-        const queryResponse = response.data.scProducts.data;
-        // console.log("responseData::", queryResponse);
-        return {
-            responseData: queryResponse.map((res) => {
-                const item_id = res.attributes.item_id;
-                return {
-                    context: filter.context,
-                    message: {
-                        catalog: {
-                            descriptor: {
-                                name: item_id.data.attributes.name,
-                                short_desc: item_id.data.attributes.short_desc,
-                                long_desc: item_id.data.attributes.long_desc,
-                                additional_desc: item_id.data.attributes.additional_desc
-                                    ? item_id.data.attributes.additional_desc
-                                    : "",
-                                media: item_id.data.attributes.provider_id.data.attributes.logo.data
-                                    .attributes.url,
-                            },
-                            providers: {
-                                id: item_id.data.attributes.provider_id.data.id,
-                                descriptor: {
-                                    name: item_id.data.attributes.provider_id.data.attributes
-                                        .provider_name,
-                                },
-                                short_desc: item_id.data.attributes.provider_id.data.attributes
-                                    .short_desc,
-                                long_desc: item_id.data.attributes.provider_id.data.attributes.long_desc,
-                                additional_desc: item_id.data.attributes.provider_id.data
-                                    .attributes.additional_desc
-                                    ? item_id.data.attributes.additional_desc
-                                    : "",
-                                categories: item_id.data.attributes.provider_id.data.attributes
-                                    .category
-                                    ? item_id.data.attributes.category
-                                    : "",
-                                locations: item_id.data.attributes.provider_id.data.attributes
-                                    .location_id.data.attributes,
-                                items: {
-                                    minimum_price: item_id.data.attributes.min_price,
-                                    maximum_price: item_id.data.attributes.max_price,
-                                },
-                            },
-                        },
-                    },
-                };
-            }),
-        };
-    }
-    catch (error) {
-        console.log(error);
-        throw new Error("SONETHING WENT WRONG");
-    }
-});
-exports.search1 = search1;
 //# sourceMappingURL=search.service.js.map
