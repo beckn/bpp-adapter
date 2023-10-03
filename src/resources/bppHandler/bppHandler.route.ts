@@ -35,7 +35,7 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 responseAction="on_search"
                 const result = await searchService.search(filter);
                 console.log("RESULT",result)
-                 await webhookCall(result.responseData,responseAction)
+                 await webhookCall(result,responseAction)
                 //response.status(httpStatus.OK).send(result);
             }
             if(filter.context.action==="select"){
