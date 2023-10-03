@@ -1,4 +1,4 @@
- ` {
+export const retailQueryFields = `    {
     data{
       id
       attributes
@@ -78,6 +78,19 @@
                   }
                 }
               }
+        cat_attr_tag_relations
+        {
+          data
+          {
+            id
+            attributes
+            {
+             taxanomy
+              taxanomy_id
+            }
+          }
+        }
       }
     }
   }`;
+  export const retailQueryTable="items"

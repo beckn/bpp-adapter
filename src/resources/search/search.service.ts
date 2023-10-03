@@ -1,15 +1,18 @@
-import httpStatus from "http-status";
 import { makeGraphQLRequest } from "../utils/api";
-import { queryFields } from "../../template/ecommerce/search/searchItemProvider.template";
-import { queryTable } from "../../template/ecommerce/search/searchItemProvider.template";
-import { queryFieldsCatTax } from "../../template/ecommerce/search/searchCatTax.template";
-import { queryTableCatTax } from "../../template/ecommerce/search/searchCatTax.template";
+import { queryFields } from "../../template/retail/search/searchItemProvider.template";
+import { queryTable } from "../../template/retail/search/searchItemProvider.template";
+import { queryFieldsCatTax } from "../../template/retail/search/searchCatTax.template";
+import { queryTableCatTax } from "../../template/retail/search/searchCatTax.template";
+import { serviceQueryFields } from "../../template/service/search/searchItemProvider.template";
+import { serviceQueryTable } from "../../template/service/search/searchItemProvider.template";
+import { serviceQueryFieldsCatTax } from "../../template/service/search/searchCatTax.template";
+import { serviceQueryTableCatTax } from "../../template/service/search/searchCatTax.template";
 import config from "../../config";
 const generateItemFilterQuery = (item: any) => {
   const query = item.descriptor.name
     .split(",")
     .map((name: string) => {
-      return `{item_id:{name:{contains:"${name}"}}}`;
+      return `{items:{name:{contains:"${name}"}}}`;
     })
     .join(",");
   return `or:[${query}]`;
@@ -19,7 +22,7 @@ const generateProviderFilterQuery = (provider: any) => {
   const query = provider.descriptor.name
     .split(",")
     .map((name: string) => {
-      return `{ item_id: { provider_id: { provider_name: { contains: "${name}" } } } }`;
+      return ` { provider_name: { contains: "${name}" } }`;
     })
     .join(",");
   return `or:[${query}]`;
@@ -45,7 +48,12 @@ const generateItemProviderQueryCombo = (
   return ``;
 };
 
-const catAttrFilter = async (filter: any, domainFilterQuery: string) => {
+const catAttrFilter = async (
+  filter: any,
+  domainFilterQuery: string,
+  fields: string,
+  table: string
+) => {
   const categoryQuery = `categories(filters:{value:{in:[ ${filter.category.descriptor.name
     .split(",")
     .map((str: string) => `"${str.trim()}"`)
@@ -87,7 +95,6 @@ const catAttrFilter = async (filter: any, domainFilterQuery: string) => {
     return accum.concat(ids);
   }, []);
 
-
   const queryFilters = `
       filters: 
         {
@@ -113,95 +120,33 @@ const catAttrFilter = async (filter: any, domainFilterQuery: string) => {
   `;
 
   const query = `query {
-    ${queryTableCatTax} (
+    ${table} (
       ${queryFilters}
     )
-    ${queryFieldsCatTax}
+    ${fields}
   }`;
-  const response = await makeGraphQLRequest(query)
+  const response = await makeGraphQLRequest(query);
 
-  return response
+  return response;
 };
 
-const scProductFilter = async (filter: any, domainFilterQuery: string) => {
+const itemFilter = async (
+  filter: any,
+  domainFilterQuery: string,
+  fields: string,
+  table: string
+) => {
   const queryFilters = generateItemProviderQueryCombo(
     domainFilterQuery,
     filter.provider ? generateProviderFilterQuery(filter.provider) : ``,
     filter.item ? generateItemFilterQuery(filter.item) : ``
   );
-
-  //     id
-  //     attributes{
-  //       sku
-  //       downloadable
-  //       min_price
-  //       max_price
-  //       on_sale
-  //       stock_quantity
-  //       stock_status
-  //       rating_count
-  //       average_rating
-  //       total_sales
-  //       tax_class
-  //       virtual
-  //       item_id{
-  //         data{
-  //           id
-  //           attributes{
-  //             name
-  //             short_desc
-  //             long_desc
-  //             provider_id{
-  //               data{
-  //                 id
-  //                 attributes{
-  //                   provider_name
-  //                   short_desc
-  //                   long_desc
-  //                   domain_id{
-  //                     data{
-  //                       id
-  //                       attributes{
-  //                         DomainName
-  //                       }
-  //                     }
-  //                   }
-  //                   location_id{
-  //                     data{
-  //                       id
-  //                       attributes{
-  //                         address
-  //                         city
-  //                         state
-  //                         country
-  //                         zip
-  //                       }
-  //                     }
-  //                   }
-  //                   logo{
-  //                     data
-  //                     {
-  //                       id
-  //                       attributes{
-  //                         url
-  //                       }
-  //                     }
-  //                   }
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }`;
-
+console.log("QueryFILTERS:::",queryFilters)
   const query = `query {
-    ${queryTable} (
+    ${table} (
       ${queryFilters}
     )
-    ${queryFields}
+    ${fields}
   }`;
 
   const response = await makeGraphQLRequest(query);
@@ -212,101 +157,19 @@ const scProductFilter = async (filter: any, domainFilterQuery: string) => {
 
 export const search = async (filter: any) => {
   try {
-    const commerceWorkFlow=config.ECOMMERCE.split(',')
-    const appointmentWorkFlow=config.APPOINTMENT.split(',')
-
-    if(commerceWorkFlow.includes(filter.context.domain))
-    {
-      const domainFilterQuery = `item_id:{provider_id:{domain_id:{DomainName:{eq:"${filter.context.domain}"}}}}`;
-      const category = filter.message.intent.category;
+    const commerceWorkFlow = config.ECOMMERCE.split(",");
+    const appointmentWorkFlow = config.APPOINTMENT.split(",");
+    const category = filter.message.intent.category;
+    const domainFilterQuery = `domain_id:{DomainName:{eq:"${filter.context.domain}"}}`;
+    if (commerceWorkFlow.includes(filter.context.domain)) {
       if (category) {
-        const result =  await catAttrFilter(filter.message.intent, domainFilterQuery);
-        const queryResponse =result.data.catAttrTagRelations.data
-        return queryResponse.map((res: any) => {
-          const item_id = res.attributes.item_id;
-          return {
-            context: filter.context,
-            message: {
-              catalog: {
-                descriptor: {
-                  name: item_id.data.attributes.name,
-                  short_desc: item_id.data.attributes.short_desc,
-                  long_desc: item_id.data.attributes.long_desc,
-                  additional_desc: {
-                    url: item_id.data.attributes.additional_desc
-                      ? item_id.data.attributes.additional_desc
-                      : "",
-                  },
-                  images: [
-                    {
-                      url: item_id.data.attributes.provider_id.data.attributes
-                        .logo.data.attributes.url,
-                    },
-                  ],
-                },
-                providers: [
-                  {
-                    Provider: {
-                      id: item_id.data.attributes.provider_id.data.id,
-                      descriptor: {
-                        name: item_id.data.attributes.provider_id.data
-                          .attributes.provider_name,
-                      },
-                      short_desc:
-                        item_id.data.attributes.provider_id.data.attributes
-                          .short_desc,
-                      long_desc:
-                        item_id.data.attributes.provider_id.data.attributes
-                          .long_desc,
-                      additional_desc: item_id.data.attributes.provider_id.data
-                        .attributes.additional_desc
-                        ? item_id.data.attributes.additional_desc
-                        : "",
-                      categories: item_id.data.attributes.provider_id.data
-                        .attributes.category
-                        ? item_id.data.attributes.category
-                        : "",
-                      locations:
-                        item_id.data.attributes.provider_id.data.attributes
-                          .location_id.data.attributes,
-                      items: [
-                        {
-                          item: {
-                            rating: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.rating_count,
-                            quantity: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.stock_quantity,
-                            price: {
-                              minimum_value: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.min_price,
-                              maximum_value: res.attributes.item_id.data.attributes.sc_retail_product.data.attributes.max_price,
-                            },
-                            descriptor: {
-                              name: item_id.data.attributes.name,
-                              short_desc: item_id.data.attributes.short_desc,
-                              long_desc: item_id.data.attributes.long_desc,
-                            },
-                          },
-                        },
-                      ],
-                    },
-                  },
-                ],
-              }
-            }
-          }
-        })
-      } 
-      else {
-       
-        const result = await scProductFilter(
+        const result = await catAttrFilter(
           filter.message.intent,
-          domainFilterQuery
+          domainFilterQuery,
+          queryFieldsCatTax,
+          queryTableCatTax
         );
-        const queryResponse = result.data.scProducts.data;
-        
-        filter.context["action"] = "on_search";
-           
-        filter.context["bpp_id"] = "beckn-strapi-sandbox-bpp-network.becknprotocol.io";
-           
-        filter.context["bpp_uri"] = "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+        const queryResponse = result.data.catAttrTagRelations.data;
         return {
           responseData: queryResponse.map((res: any) => {
             const item_id = res.attributes.item_id;
@@ -344,8 +207,8 @@ export const search = async (filter: any) => {
                         long_desc:
                           item_id.data.attributes.provider_id.data.attributes
                             .long_desc,
-                        additional_desc: item_id.data.attributes.provider_id.data
-                          .attributes.additional_desc
+                        additional_desc: item_id.data.attributes.provider_id
+                          .data.attributes.additional_desc
                           ? item_id.data.attributes.additional_desc
                           : "",
                         categories: item_id.data.attributes.provider_id.data
@@ -358,11 +221,23 @@ export const search = async (filter: any) => {
                         items: [
                           {
                             item: {
-                              rating: res.attributes.average_rating,
-                              quantity: res.attributes.stock_quantity,
+                              rating:
+                                res.attributes.item_id.data.attributes
+                                  .sc_retail_product.data.attributes
+                                  .rating_count,
+                              quantity:
+                                res.attributes.item_id.data.attributes
+                                  .sc_retail_product.data.attributes
+                                  .stock_quantity,
                               price: {
-                                minimum_value: res.attributes.min_price,
-                                maximum_value: res.attributes.max_price,
+                                minimum_value:
+                                  res.attributes.item_id.data.attributes
+                                    .sc_retail_product.data.attributes
+                                    .min_price,
+                                maximum_value:
+                                  res.attributes.item_id.data.attributes
+                                    .sc_retail_product.data.attributes
+                                    .max_price,
                               },
                               descriptor: {
                                 name: item_id.data.attributes.name,
@@ -380,12 +255,285 @@ export const search = async (filter: any) => {
             };
           }),
         };
+      } else {
+        const result = await itemFilter(
+          filter.message.intent,
+          domainFilterQuery,
+          queryFields,
+          queryTable
+        );
+        const queryResponse = result.data.providers.data;
+          console.log(queryResponse)
+        filter.context["action"] = "on_search";
+
+        filter.context["bpp_id"] =
+          "beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+
+        filter.context["bpp_uri"] =
+          "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+        return {
+          // responseData: queryResponse.map((res: any) => {
+          //   const item_id = res.attributes.item_id;
+          //   return {
+          //     context: filter.context,
+          //     message: {
+          //       catalog: {
+          //         descriptor: {
+          //           name: item_id.data.attributes.name,
+          //           short_desc: item_id.data.attributes.short_desc,
+          //           long_desc: item_id.data.attributes.long_desc,
+          //           additional_desc: {
+          //             url: item_id.data.attributes.additional_desc
+          //               ? item_id.data.attributes.additional_desc
+          //               : "",
+          //           },
+          //           images: [
+          //             {
+          //               url: item_id.data.attributes.provider_id.data.attributes
+          //                 .logo.data.attributes.url,
+          //             },
+          //           ],
+          //         },
+          //         providers: [
+          //           {
+          //             Provider: {
+          //               id: item_id.data.attributes.provider_id.data.id,
+          //               descriptor: {
+          //                 name: item_id.data.attributes.provider_id.data
+          //                   .attributes.provider_name,
+          //               },
+          //               short_desc:
+          //                 item_id.data.attributes.provider_id.data.attributes
+          //                   .short_desc,
+          //               long_desc:
+          //                 item_id.data.attributes.provider_id.data.attributes
+          //                   .long_desc,
+          //               additional_desc: item_id.data.attributes.provider_id
+          //                 .data.attributes.additional_desc
+          //                 ? item_id.data.attributes.additional_desc
+          //                 : "",
+          //               categories: item_id.data.attributes.provider_id.data
+          //                 .attributes.category
+          //                 ? item_id.data.attributes.category
+          //                 : "",
+          //               locations:
+          //                 item_id.data.attributes.provider_id.data.attributes
+          //                   .location_id.data.attributes,
+          //               items: [
+          //                 {
+          //                   item: {
+          //                     rating: res.attributes.average_rating,
+          //                     quantity: res.attributes.stock_quantity,
+          //                     price: {
+          //                       minimum_value: res.attributes.min_price,
+          //                       maximum_value: res.attributes.max_price,
+          //                     },
+          //                     descriptor: {
+          //                       name: item_id.data.attributes.name,
+          //                       short_desc: item_id.data.attributes.short_desc,
+          //                       long_desc: item_id.data.attributes.long_desc,
+          //                     },
+          //                   },
+          //                 },
+          //               ],
+          //             },
+          //           },
+          //         ],
+          //       },
+          //     },
+          //   };
+          // }),
+          context:filter.context,
+          responses:[{
+            context:filter.context,
+            message:{
+              catalog:{
+                descriptor:{
+                  name: "BPP",
+                  code: "bpp",
+                  short_desc: "TUnified Strapi BPP"
+                },
+                providers:queryResponse.map((e:any)=>{ return {
+                  id:e.id,
+                  descriptor:{
+                    name:e.attributes.provider_name,
+                    short_desc:e.attributes.short_desc,
+                    categories:e.attributes.category_ids.data.map((cat:any)=>{return cat.attributes.value}),
+                    items:e.attributes.items.data.map((item:any)=>{
+                      return {
+                        id:item.id,
+                        description:{
+                          name:item.attributes.name,
+                          long_desc:item.attributes.long_desc,
+                          short_desc:item.attributes.short_desc,
+                          code:item.attributes.code
+
+                        },
+                        price:{
+                          minimum_value:item.attributes.sc_retail_product.data.attributes.min_price,
+                          currency:item.attributes.sc_retail_product.data.attributes.currency
+                        },
+                        quantity:{
+                          available:{
+                            count:item.attributes.sc_retail_product.data.attributes.stock_quantity
+                          }
+                        }
+                      
+
+                      }
+                    })
+                  }
+
+                }})
+              }
+            }
+
+          }]
+        };
+      }
+    } else {
+      if (category) {
+        const result = await catAttrFilter(
+          filter.message.intent,
+          domainFilterQuery,
+          serviceQueryFieldsCatTax,
+          serviceQueryTableCatTax
+        );
+        return result;
+      } else {
+        const result = await itemFilter(
+          filter.message.intent,
+          domainFilterQuery,
+          serviceQueryFields,
+          serviceQueryTable
+        );
+        const queryResponse = result.data.services.data;
+        console.log("queryResponse::", queryResponse);
+       
+        console.log(
+          "queryResponse::item_id",
+          queryResponse[0].attributes.item_id
+        );
+        // console.log(
+        //   "queryResponse::item_id:::provider_id",
+        //   queryResponse[0].attributes.item_id.data.attributes.provider_id
+        // );
+        // console.log(
+        //   "queryResponse::item_id:::provider_id:::location_id",
+        //   queryResponse[0].attributes.item_id.data.attributes.provider_id.data
+        //     .attributes.location_id
+        // );
+        // console.log(
+        //   "queryResponse::item_id:::provider_id::category_ids",
+        //   queryResponse[0].attributes.item_id.data.attributes.provider_id.data
+        //     .attributes.category_ids
+        // );
+        // console.log(
+        //   "queryResponse::item_id:::provider_id::category_ids::attributes",
+        //   queryResponse[0].attributes.item_id.data.attributes.provider_id.data
+        //     .attributes.category_ids.data[0].attributes
+        // );
+        // console.log("queryResponse::agent_id", queryResponse[0].attributes.agent_id);
+        // console.log("queryResponse::agent_id::agent_profile", queryResponse[0].attributes.agent_id.data.attributes.agent_profile);
+        // console.log("queryResponse::agent_id::locations", queryResponse[0].attributes.agent_id.data.attributes.locations);
+        return {
+          responseData: queryResponse.map((res: any) => {
+            const item_id = res.attributes.item_id;
+            const agent_id = res.attributes.agent_id;
+            return {
+              context: filter.context,
+              message: {
+                catalog: {
+                  descriptor: {
+                    name: item_id.data.attributes.name,
+                    code: item_id.data.attributes.code,
+                    short_desc: item_id.data.attributes.short_desc,
+                    long_desc: item_id.data.attributes.long_desc,
+                  },
+                  fulfillments: [
+                    {
+                      agent: {
+                        person: {
+                          name: agent_id.data.attributes.first_name,
+                          image: "",
+                          gender: "",
+                          skills:
+                            agent_id.data.attributes.agent_profile.data
+                              .attributes.qualification,
+                        },
+                        contact: {
+                          phone: "",
+                          email: "",
+                        },
+                      },
+                    },
+                  ],
+                  providers: [
+                    {
+                      id: item_id.data.attributes.provider_id.data.attributes
+                        .provider_id,
+                      descriptor: {
+                        name: item_id.data.attributes.provider_id.data
+                          .attributes.provider_name,
+                        code: "",
+                        short_desc: "",
+                        long_desc: "",
+                      },
+                      categories:
+                        item_id.data.attributes.provider_id.data.attributes.category_ids.data.map(
+                          (eve: any) => {
+                            return {
+                              description: eve.attributes.value,
+                              id: eve.id,
+                              parent_category_id: eve.attributes.parent_id.data,
+                            };
+                          }
+                        ),
+                    },
+                  ],
+                  locations: [
+                    {
+                      address:
+                        item_id.data.attributes.provider_id.data.attributes
+                          .location_id.data.attributes.address,
+                      city: item_id.data.attributes.provider_id.data.attributes
+                        .location_id.data.attributes.city,
+                      state:
+                        item_id.data.attributes.provider_id.data.attributes
+                          .location_id.data.attributes.state,
+                      country:
+                        item_id.data.attributes.provider_id.data.attributes
+                          .location_id.data.attributes.country,
+                    },
+                  ],
+                  items: [
+                    {
+                      descriptor: {
+                        name: item_id.data.attributes.name,
+                        code: item_id.data.attributes.code,
+                        short_desc: item_id.data.attributes.short_desc,
+                        long_desc: item_id.data.attributes.long_desc,
+                      },
+                      creator: {
+                        descriptor: {
+                          name: agent_id.data.attributes.first_name,
+                          code: agent_id.data.id,
+                          short_desc: agent_id.data.attributes.description,
+                          long_desc: "",
+                        }
+                      },
+                      price: {
+                        value: res.attributes.service_fee,
+                      },
+                    },
+                  ],
+                },
+              },
+            };
+          }),
+        };
       }
     }
-    else{
-      
-    }
-   
   } catch (error: any) {
     throw new Error(error.message);
   }

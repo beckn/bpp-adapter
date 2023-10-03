@@ -1,63 +1,67 @@
-import httpStatus from "http-status";
+import { makeGraphQLRequest } from "../utils/api";
+import config from "../../config";
 
-import AppError from "../../library/exception";
-import axiosInstance from "axios";
-import https from "https";
-import qs from "qs";
+export const init = async (filter: any)=>{
+  console.log("ENTEREDL::::")
 
-const axios = axiosInstance.create({
-  httpsAgent: new https.Agent({
-    rejectUnauthorized: false,
-  }),
-});
+  // const countryCodePattern = /^\+\d{2}-/;
+  // const phoneNumberWithoutCountryCode = filter.message.order.billing.phone.replace(countryCodePattern, '');
+  // const query=`query {
+  //   customers(filters:{contact:{eq:${phoneNumberWithoutCountryCode}}})
+  //   {
+  //     data{
+  //       id
+  //       attributes{
+  //         first_name
+  //         last_name
+  //         contact
+  //       }
+  //     }
+  //   }
+  // }`
 
-const apiUrl = "https://strapi-bpp.becknprotocol.io/graphql";
-
-const apiToken =
-  "1b8e2e1f6ce05a6cdae76863c630c6656be19450efdc8fa7196774cb368065c8fbee1b4cdfe8c39fb46d207b7241dc64ece560bc95270c3376dcd7fbe24cf44cd3869737ffcce3bbcb992e3313a183f20a18cbb73fbea9f696a3c852dcc55f4ed70be2f74983f609f7117a2f53c587408838d908a50f0a9597215fb7880111b3";
-
-const headers = {
-  Authorization: `Bearer ${apiToken}`,
-  "Content-Type": "application/JSON",
-};
-
-
-export const init = async (filter: any) => {
-    try {
-      console.log(filter);
-      const itemArray = filter.message.order.items;
-      console.log(itemArray);
-      const itemValue = itemArray.map((obj: { id: string }) => obj.id);
-      console.log(itemValue);
-      
-      const query = `createOrder(data: {
-        status:"Pending"
-         items: [${itemValue}]
-         
-       })`;
-      const queryFields = ` {
+  // const customerExist= await makeGraphQLRequest(query)
+  // const custId=customerExist?.data?.customers?.data[0]?.id?customerExist.data.customers.data[0].id: ""
+  // console.log("custId",custId)
+  const checkCustomerExistence = async (phoneNumber:any) => {
+    const removeCountryCode = (phoneNumber:any) => {
+      const countryCodePattern = /^\+\d{2}-/;
+      return phoneNumber.replace(countryCodePattern, '');
+    };
+  
+    const phoneNumberWithoutCountryCode = removeCountryCode(phoneNumber);
+  
+    const query = `query {
+      customers(filters: { contact: { eq: "${phoneNumberWithoutCountryCode}" } }) {
         data {
           id
           attributes {
-           status
+            first_name
+            last_name
+            contact
           }
         }
-      }`;
-        console.log(query, queryFields)
-        const response = await axios
-        .post(
-          apiUrl,
-          {
-            query: `mutation{${query}${queryFields}}`,
-          },
-          {
-            headers,
-          }
-        )
-        .then((res) => res.data);
-      return response;
-    } catch (error) {
-      throw new Error("SOMETHING WENT WRONG");
-    }
-  };
+      }
+    }`;
   
+   
+      const customerExist = await makeGraphQLRequest(query);
+    console.log("Strapi::",customerExist)
+      const custId = customerExist?.data?.customers?.data[0]?.id || '';
+
+      
+  console.log("customerExists",custId)
+      return custId;
+    
+  };
+
+  const customerExists = await checkCustomerExistence(filter.message.order.billing.phone);
+
+  if(customerExists=='')
+  {
+    
+  }
+
+  
+  return filter
+}

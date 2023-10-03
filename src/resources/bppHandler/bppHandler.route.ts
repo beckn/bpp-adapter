@@ -15,11 +15,12 @@ const bppHeaders = {
   
   "Content-Type": "application/json",
 };
-const webhookCall = (data: any,action:string) => Promise.all(
+// const webhookCall =  (data: any,action:string) => Promise.all(
   
-    data.map(async (value: any) => await axios.post(`${config.BPP_URL}/${action}`, value,{headers:bppHeaders}))
-)
-
+//     data.map(async (value: any) => await axios.post(`${config.BPP_URL}/${action}`, value,{headers:bppHeaders}))
+// )
+ const webhookCall = async (data: any,action:string)=>
+ await axios.post(`${config.BPP_URL}/${action}`, data,{headers:bppHeaders});
 
 export default function defineBppHandlerRoutes(expressApp: express.Application) {
     const bppHandlerRouter = express.Router();
@@ -33,13 +34,15 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
             if(filter.context.action==="search"){
                 responseAction="on_search"
                 const result = await searchService.search(filter);
-                console.log(result)
+                console.log("RESULT",result)
                  await webhookCall(result.responseData,responseAction)
-                //response.status(httpStatus.OK).send(result.responseData);
+                //response.status(httpStatus.OK).send(result);
             }
             if(filter.context.action==="select"){
                 const result = await selectService.select(filter);
-                response.status(httpStatus.OK).send(result);
+                responseAction="on_select"
+                //response.status(httpStatus.OK).send(result);
+                await webhookCall(result,responseAction)
             }
             if(filter.context.action==="init"){
                 const result = await initService.init(filter);
