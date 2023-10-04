@@ -81,6 +81,7 @@ const catAttrFilter = async (
     }
   }
 }`;
+  console.log("CATEGORY QUERY", queryStr);
   const categoryResponse = await makeGraphQLRequest(queryStr)
     .then((res) => res.data)
     .then((res) => res.categories)
@@ -98,7 +99,7 @@ const catAttrFilter = async (
   const queryFilters = `
       filters: 
         {
-          taxanomy: { contains:"TAG" } 
+          taxanomy: { contains:"CAT" } 
           taxanomy_id:{ in: [${catIds
             .map((str: string) => `"${str.trim()}"`)
             .join(",")}] }
@@ -141,7 +142,7 @@ const itemFilter = async (
     filter.provider ? generateProviderFilterQuery(filter.provider) : ``,
     filter.item ? generateItemFilterQuery(filter.item) : ``
   );
-console.log("QueryFILTERS:::",queryFilters)
+  console.log("QueryFILTERS:::", queryFilters);
   const query = `query {
     ${table} (
       ${queryFilters}
@@ -263,7 +264,7 @@ export const search = async (filter: any) => {
           queryTable
         );
         const queryResponse = result.data.providers.data;
-          console.log(queryResponse)
+        console.log(queryResponse);
         filter.context["action"] = "on_search";
 
         filter.context["bpp_id"] =
@@ -272,123 +273,56 @@ export const search = async (filter: any) => {
         filter.context["bpp_uri"] =
           "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
         return {
-          // responseData: queryResponse.map((res: any) => {
-          //   const item_id = res.attributes.item_id;
-          //   return {
-          //     context: filter.context,
-          //     message: {
-          //       catalog: {
-          //         descriptor: {
-          //           name: item_id.data.attributes.name,
-          //           short_desc: item_id.data.attributes.short_desc,
-          //           long_desc: item_id.data.attributes.long_desc,
-          //           additional_desc: {
-          //             url: item_id.data.attributes.additional_desc
-          //               ? item_id.data.attributes.additional_desc
-          //               : "",
-          //           },
-          //           images: [
-          //             {
-          //               url: item_id.data.attributes.provider_id.data.attributes
-          //                 .logo.data.attributes.url,
-          //             },
-          //           ],
-          //         },
-          //         providers: [
-          //           {
-          //             Provider: {
-          //               id: item_id.data.attributes.provider_id.data.id,
-          //               descriptor: {
-          //                 name: item_id.data.attributes.provider_id.data
-          //                   .attributes.provider_name,
-          //               },
-          //               short_desc:
-          //                 item_id.data.attributes.provider_id.data.attributes
-          //                   .short_desc,
-          //               long_desc:
-          //                 item_id.data.attributes.provider_id.data.attributes
-          //                   .long_desc,
-          //               additional_desc: item_id.data.attributes.provider_id
-          //                 .data.attributes.additional_desc
-          //                 ? item_id.data.attributes.additional_desc
-          //                 : "",
-          //               categories: item_id.data.attributes.provider_id.data
-          //                 .attributes.category
-          //                 ? item_id.data.attributes.category
-          //                 : "",
-          //               locations:
-          //                 item_id.data.attributes.provider_id.data.attributes
-          //                   .location_id.data.attributes,
-          //               items: [
-          //                 {
-          //                   item: {
-          //                     rating: res.attributes.average_rating,
-          //                     quantity: res.attributes.stock_quantity,
-          //                     price: {
-          //                       minimum_value: res.attributes.min_price,
-          //                       maximum_value: res.attributes.max_price,
-          //                     },
-          //                     descriptor: {
-          //                       name: item_id.data.attributes.name,
-          //                       short_desc: item_id.data.attributes.short_desc,
-          //                       long_desc: item_id.data.attributes.long_desc,
-          //                     },
-          //                   },
-          //                 },
-          //               ],
-          //             },
-          //           },
-          //         ],
-          //       },
-          //     },
-          //   };
-          // }),
-          context:filter.context,
-          responses:[{
-            context:filter.context,
-            message:{
-              catalog:{
-                descriptor:{
-                  name: "BPP",
-                  code: "bpp",
-                  short_desc: "TUnified Strapi BPP"
-                },
-                providers:queryResponse.map((e:any)=>{ return {
-                  id:e.id,
-                  descriptor:{
-                    name:e.attributes.provider_name,
-                    short_desc:e.attributes.short_desc,
-                    categories:e.attributes.category_ids.data.map((cat:any)=>{return cat.attributes.value}),
-                    items:e.attributes.items.data.map((item:any)=>{
-                      return {
-                        id:item.id,
-                        description:{
-                          name:item.attributes.name,
-                          long_desc:item.attributes.long_desc,
-                          short_desc:item.attributes.short_desc,
-                          code:item.attributes.code
-
-                        },
-                        price:{
-                          minimum_value:item.attributes.sc_retail_product.data.attributes.min_price,
-                          currency:item.attributes.sc_retail_product.data.attributes.currency
-                        },
-                        quantity:{
-                          available:{
-                            count:item.attributes.sc_retail_product.data.attributes.stock_quantity
-                          }
-                        }
-                      
-
+          context: filter.context,
+          message: {
+            catalog: {
+              descriptor: {
+                name: "BPP",
+                code: "bpp",
+                short_desc: "TUnified Strapi BPP",
+              },
+              providers: queryResponse.map((e: any) => {
+                return {
+                  id: e.id,
+                  descriptor: {
+                    name: e.attributes.provider_name,
+                    short_desc: e.attributes.short_desc,
+                    categories: e.attributes.category_ids.data.map(
+                      (cat: any) => {
+                        return cat.attributes.value;
                       }
-                    })
-                  }
-
-                }})
-              }
-            }
-
-          }]
+                    ),
+                    items: e.attributes.items.data.map((item: any) => {
+                      return {
+                        id: item.id,
+                        description: {
+                          name: item.attributes.name,
+                          long_desc: item.attributes.long_desc,
+                          short_desc: item.attributes.short_desc,
+                          code: item.attributes.code,
+                        },
+                        price: {
+                          minimum_value:
+                            item.attributes.sc_retail_product.data.attributes
+                              .min_price,
+                          currency:
+                            item.attributes.sc_retail_product.data.attributes
+                              .currency,
+                        },
+                        quantity: {
+                          available: {
+                            count:
+                              item.attributes.sc_retail_product.data.attributes
+                                .stock_quantity,
+                          },
+                        },
+                      };
+                    }),
+                  },
+                };
+              }),
+            },
+          },
         };
       }
     } else {
@@ -409,7 +343,7 @@ export const search = async (filter: any) => {
         );
         const queryResponse = result.data.services.data;
         console.log("queryResponse::", queryResponse);
-       
+
         console.log(
           "queryResponse::item_id",
           queryResponse[0].attributes.item_id
@@ -520,7 +454,7 @@ export const search = async (filter: any) => {
                           code: agent_id.data.id,
                           short_desc: agent_id.data.attributes.description,
                           long_desc: "",
-                        }
+                        },
                       },
                       price: {
                         value: res.attributes.service_fee,
