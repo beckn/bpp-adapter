@@ -287,6 +287,7 @@ export const search = async (filter: any) => {
                   descriptor: {
                     name: e.attributes.provider_name,
                     short_desc: e.attributes.short_desc,
+                  },
                     categories: e.attributes.category_ids.data.map(
                       (cat: any) => {
                         return cat.attributes.value;
@@ -318,7 +319,7 @@ export const search = async (filter: any) => {
                         },
                       };
                     }),
-                  },
+                  
                 };
               }),
             },
