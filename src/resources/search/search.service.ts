@@ -279,21 +279,21 @@ export const search = async (filter: any) => {
               descriptor: {
                 name: "BPP",
                 code: "bpp",
-                short_desc: "TUnified Strapi BPP",
+                short_desc: "Unified Strapi BPP",
               },
               providers: queryResponse.map((e: any) => {
                 return {
                   id: e.id,
                   descriptor: {
-                    name: e.attributes.provider_name,
-                    short_desc: e.attributes.short_desc,
+                    name: e?.attributes?.provider_name,
+                    short_desc: e?.attributes?.short_desc,
                   },
-                    categories: e.attributes.category_ids.data.map(
+                    categories: e?.attributes?.category_ids?.data.map(
                       (cat: any) => {
-                        return cat.attributes.value;
+                        return cat?.attributes?.value;
                       }
                     ),
-                    items: e.attributes.items.data.map((item: any) => {
+                    items: e?.attributes?.items?.data?.map((item: any) => {
                       return {
                         id: item.id,
                         description: {
@@ -304,19 +304,16 @@ export const search = async (filter: any) => {
                         },
                         price: {
                           minimum_value:
-                            item.attributes.sc_retail_product.data.attributes
-                              .min_price,
+                            item?.attributes?.sc_retail_product?.data?.attributes?.min_price,
                           currency:
-                            item.attributes.sc_retail_product.data.attributes
-                              .currency,
+                            item?.attributes?.sc_retail_product?.data?.attributes?.currency,
                         },
                         quantity: {
                           available: {
                             count:
-                              item.attributes.sc_retail_product.data.attributes
-                                .stock_quantity,
+                              item?.attributes?.sc_retail_product?.data?.attributes?.stock_quantity,
                           },
-                        },
+                        }
                       };
                     }),
                   
