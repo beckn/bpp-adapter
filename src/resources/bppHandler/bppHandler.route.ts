@@ -64,7 +64,7 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
           }
             
 
-            //response.status(httpStatus.OK).send({"success": "ACK"});
+            response.status(httpStatus.OK).send({"success": "ACK"});
             
             
           
