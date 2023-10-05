@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import * as searchService from "../search/search.service";
 import * as selectService from "../select/select.service";
 import * as initService from "../init/init.service";
+import * as confirmService from "../confirm/confirm.service";
 import axiosInstance from "axios";
 import https from 'https'
 import config from "../../config";
@@ -15,10 +16,7 @@ const bppHeaders = {
   
   "Content-Type": "application/json",
 };
-// const webhookCall =  (data: any,action:string) => Promise.all(
-  
-//     data.map(async (value: any) => await axios.post(`${config.BPP_URL}/${action}`, value,{headers:bppHeaders}))
-// )
+
  const webhookCall = async (data: any,action:string)=>
  await axios.post(`${config.BPP_URL}/${action}`, data,{headers:bppHeaders});
 
@@ -35,22 +33,38 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 responseAction="on_search"
                 const result = await searchService.search(filter);
                 console.log("RESULT",result)
-                 await webhookCall(result,responseAction)
-                //response.status(httpStatus.OK).send(result);
+                if(result)
+                {
+                  await webhookCall(result,responseAction)
+                  //response.status(httpStatus.OK).send(result);
+                }
+                
+                
             }
             if(filter.context.action==="select"){
                 const result = await selectService.select(filter);
                 responseAction="on_select"
-                //response.status(httpStatus.OK).send(result);
-                await webhookCall(result,responseAction)
+                if(result)
+                {
+                  await webhookCall(result,responseAction)
+                  //response.status(httpStatus.OK).send(result);
+                }
             }
             if(filter.context.action==="init"){
                 const result = await initService.init(filter);
+                responseAction="on_init"
                 response.status(httpStatus.OK).send(result);
+                await webhookCall(result,responseAction)
             }
+            if(filter.context.action==="confirm"){
+              const result = await initService.init(filter);
+              responseAction="on_init"
+              response.status(httpStatus.OK).send(result);
+              await webhookCall(result,responseAction)
+          }
             
 
-            //response.status(httpStatus.OK).send({"success": ACK});
+            //response.status(httpStatus.OK).send({"success": "ACK"});
             
             
           
