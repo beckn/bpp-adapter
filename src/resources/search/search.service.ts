@@ -323,7 +323,8 @@ export const search = async (filter: any) => {
           },
         };
       }
-    } else {
+    } else if (appointmentWorkFlow.includes(filter.context.domain))
+     {
       if (category) {
         const result = await catAttrFilter(
           filter.message.intent,
