@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import * as searchService from "../search/search.service";
 import * as selectService from "../select/select.service";
 import * as initService from "../init/init.service";
-import * as confirmService from "../confirm/confirm.service";
+// import * as confirmService from "../confirm/confirm.service";
 import axiosInstance from "axios";
 import https from 'https'
 import config from "../../config";
@@ -35,6 +35,7 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 console.log("RESULT",result)
                 if(result)
                 {
+                  console.log("ENTER:")
                   await webhookCall(result,responseAction)
                   //response.status(httpStatus.OK).send(result);
                 }
@@ -46,6 +47,7 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 responseAction="on_select"
                 if(result)
                 {
+                  console.log(JSON.stringify(result))
                   await webhookCall(result,responseAction)
                   //response.status(httpStatus.OK).send(result);
                 }
