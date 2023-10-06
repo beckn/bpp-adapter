@@ -299,7 +299,7 @@ export const search = async (filter: any) => {
                     items: e?.attributes?.items?.data?.map((item: any) => {
                       return {
                         id: item.id,
-                        descriptior: {
+                        descriptor: {
                           name: item.attributes.name,
                           long_desc: item.attributes.long_desc,
                           short_desc: item.attributes.short_desc,
