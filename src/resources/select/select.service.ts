@@ -122,9 +122,8 @@ export const select = async (filter: any) => {
           "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
         const output = {
           
-          responses: [
-            {
-           
+       
+            context:filter.context,
               message: {
                 order: {
                   provider: res?.attributes?.provider_id,
@@ -212,8 +211,8 @@ export const select = async (filter: any) => {
                   ],
                 },
               },
-            },
-          ],
+            
+          
         };
         return output;
       } else {
