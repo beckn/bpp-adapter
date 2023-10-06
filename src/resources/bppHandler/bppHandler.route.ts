@@ -48,8 +48,8 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 if(result)
                 {
                   console.log(JSON.stringify(result))
-                  //await webhookCall(result,responseAction)
-                  response.status(httpStatus.OK).send(result);
+                  await webhookCall(result,responseAction)
+                  //response.status(httpStatus.OK).send(result);
                 }
             }
             if(filter.context.action==="init"){
