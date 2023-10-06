@@ -307,7 +307,7 @@ export const search = async (filter: any) => {
                         },
                         price: {
                           minimum_value:
-                            item?.attributes?.sc_retail_product?.data?.attributes?.min_price?item?.attributes?.sc_retail_product?.data?.attributes?.min_price:"0",
+                            item?.attributes?.sc_retail_product?.data?.attributes?.min_price?item?.attributes?.sc_retail_product?.data?.attributes?.min_price.toString():"0",
                           currency:
                             item?.attributes?.sc_retail_product?.data?.attributes?.currency?item?.attributes?.sc_retail_product?.data?.attributes?.currency:"INR"
                         },
