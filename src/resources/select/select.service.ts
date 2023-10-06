@@ -121,10 +121,10 @@ export const select = async (filter: any) => {
         filter.context["bpp_uri"] =
           "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
         const output = {
-          context: filter.context,
+          
           responses: [
             {
-              context: filter.context,
+           
               message: {
                 order: {
                   provider: res?.attributes?.provider_id,
