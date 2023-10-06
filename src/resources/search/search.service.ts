@@ -257,6 +257,7 @@ export const search = async (filter: any) => {
           }),
         };
       } else {
+        console.log("ENTER LOGICC")
         const result = await itemFilter(
           filter.message.intent,
           domainFilterQuery,
@@ -285,12 +286,14 @@ export const search = async (filter: any) => {
                 return {
                   id: e.id,
                   descriptor: {
-                    name: e?.attributes?.provider_name,
-                    short_desc: e?.attributes?.short_desc,
+                    name: e?.attributes?.provider_name?e?.attributes?.name:"",
+                    short_desc: e?.attributes?.short_desc?e?.attributes?.short_desc:"",
                   },
                     categories: e?.attributes?.category_ids?.data.map(
                       (cat: any) => {
-                        return cat?.attributes?.value;
+                        return {
+                          id:cat?.attributes?.value
+                        };
                       }
                     ),
                     items: e?.attributes?.items?.data?.map((item: any) => {
@@ -304,14 +307,14 @@ export const search = async (filter: any) => {
                         },
                         price: {
                           minimum_value:
-                            item?.attributes?.sc_retail_product?.data?.attributes?.min_price,
+                            item?.attributes?.sc_retail_product?.data?.attributes?.min_price?item?.attributes?.sc_retail_product?.data?.attributes?.min_price:"0",
                           currency:
-                            item?.attributes?.sc_retail_product?.data?.attributes?.currency,
+                            item?.attributes?.sc_retail_product?.data?.attributes?.currency?item?.attributes?.sc_retail_product?.data?.attributes?.currency:"INR"
                         },
                         quantity: {
                           available: {
                             count:
-                              item?.attributes?.sc_retail_product?.data?.attributes?.stock_quantity,
+                              item?.attributes?.sc_retail_product?.data?.attributes?.stock_quantity?item?.attributes?.sc_retail_product?.data?.attributes?.stock_quantity:0
                           },
                         }
                       };
