@@ -300,10 +300,11 @@ export const search = async (filter: any) => {
                       return {
                         id: item.id,
                         descriptor: {
-                          name: item.attributes.name,
-                          long_desc: item.attributes.long_desc,
-                          short_desc: item.attributes.short_desc,
-                          code: item.attributes.code,
+                          name: item?.attributes?.name?.toString()?item?.attributes?.name?.toString():"",
+                          long_desc: item?.attributes?.long_desc?.toString()?item?.attributes?.long_desc?.toString():"",
+                          short_desc: item?.attributes?.short_desc.toString()?item?.attributes?.short_desc?.toString():"",
+                          code: item?.attributes?.code?.toString()?item?.attributes?.code?.toString():"",
+                         
                         },
                         price: {
                           minimum_value:
