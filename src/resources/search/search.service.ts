@@ -286,7 +286,7 @@ export const search = async (filter: any) => {
                 return {
                   id: e.id,
                   descriptor: {
-                    name: e?.attributes?.provider_name?e?.attributes?.name:"",
+                    name: e?.attributes?.provider_name?e?.attributes?.provider_name:"",
                     short_desc: e?.attributes?.short_desc?e?.attributes?.short_desc:"",
                   },
                     categories: e?.attributes?.category_ids?.data.map(
