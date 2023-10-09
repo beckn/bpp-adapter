@@ -5,6 +5,7 @@ export const queryFields = `{
       provider_name
       short_desc
       long_desc
+      provider_uri
       category_ids
       {
         data
@@ -52,6 +53,15 @@ export const queryFields = `{
             short_desc
             long_desc
             code
+            image{
+              data{
+                id
+                attributes
+                {
+                  url
+                }
+              }
+            }
             sc_retail_product {
               data {
                 id
