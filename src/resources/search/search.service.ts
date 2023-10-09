@@ -495,7 +495,7 @@ export const search = async (filter: any) => {
                     },
                     rateable:true,
                     price: {
-                            minimum_value: item?.attributes?.sc_retail_product?.data
+                            value: item?.attributes?.sc_retail_product?.data
                               ?.attributes?.min_price
                               ? item?.attributes?.sc_retail_product?.data?.attributes?.min_price.toString()
                               : "0",
