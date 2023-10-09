@@ -447,7 +447,7 @@ export const search = async (filter: any) => {
                 : {}),
                 fulfillments: [
                   {
-                    id: "DSEP_FUL_58741444",
+                    id: "FUL_58741444",
                     type: "SCHOLARSHIP",
                     tracking: false,
                     contact: {
@@ -516,7 +516,7 @@ export const search = async (filter: any) => {
                           },
                     category_ids:item.categories.map((cat:any)=>
                       
-                        cat?.attributes?.value?cat?.attributes?.value:""
+                        cat?.id?cat?.id:""
                       
                     ),
                     fulfillment_ids:["FUL_58741444"],
