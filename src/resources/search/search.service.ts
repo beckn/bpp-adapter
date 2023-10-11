@@ -447,7 +447,7 @@ export const search = async (filter: any) => {
                 : {}),
                 fulfillments: [
                   {
-                    id: "FUL_58741444",
+                    id: "DSEP_FUL_58741444",
                     type: "SCHOLARSHIP",
                     tracking: false,
                     contact: {
@@ -494,6 +494,16 @@ export const search = async (filter: any) => {
                         : {}),
                     },
                     rateable:true,
+                    ...(e.location_id && e.location_id.data
+                      ? {
+                          locations: [
+                            {
+                              id: e?.location_id?.data?.id ? e?.location_id?.data?.id : ""
+                             
+                            },
+                          ],
+                        }
+                      : {}),
                     price: {
                             value: item?.attributes?.sc_retail_product?.data
                               ?.attributes?.min_price
@@ -519,7 +529,7 @@ export const search = async (filter: any) => {
                         cat?.id?cat?.id:""
                       
                     ),
-                    fulfillment_ids:["FUL_58741444"],
+                    fulfillment_ids:["DSEP_FUL_58741444"],
                     tags:item.tags.map((tag:any)=>{
                    return{
                     display:true,

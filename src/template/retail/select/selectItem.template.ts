@@ -7,7 +7,7 @@ export const retailQueryFields = `    {
               long_desc
               short_desc
               code
-              provider_id
+              provider
               {
                 data{
                   id

@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import * as searchService from "../search/search.service";
 import * as selectService from "../select/select.service";
 import * as initService from "../init/init.service";
-// import * as confirmService from "../confirm/confirm.service";
+import * as confirmService from "../confirm/confirm.service";
 import axiosInstance from "axios";
 import https from 'https'
 import config from "../../config";
@@ -36,7 +36,7 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 if(result)
                 {
                   console.log("ENTER:")
-                  await webhookCall(result,responseAction)
+              await webhookCall(result,responseAction)
                   //response.status(httpStatus.OK).send(result);
                 }
                 
@@ -48,21 +48,30 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 if(result)
                 {
                   console.log(JSON.stringify(result))
-                  await webhookCall(result,responseAction)
+                 await webhookCall(result,responseAction)
                   //response.status(httpStatus.OK).send(result);
                 }
             }
             if(filter.context.action==="init"){
                 const result = await initService.init(filter);
                 responseAction="on_init"
-                response.status(httpStatus.OK).send(result);
-                await webhookCall(result,responseAction)
+                if(result)
+                {
+                  console.log(JSON.stringify(result))
+                 await webhookCall(result,responseAction)
+                  //response.status(httpStatus.OK).send(result);
+                }
             }
             if(filter.context.action==="confirm"){
-              const result = await initService.init(filter);
-              responseAction="on_init"
-              response.status(httpStatus.OK).send(result);
-              await webhookCall(result,responseAction)
+              const result = await confirmService.confirm(filter);
+           
+              responseAction="on_confirm"
+              if(result)
+              {
+                console.log(JSON.stringify(result))
+               await webhookCall(result,responseAction)
+                //response.status(httpStatus.OK).send(result);
+              }
           }
             
 
