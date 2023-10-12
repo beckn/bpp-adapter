@@ -496,11 +496,11 @@ export const search = async (filter: any) => {
                     rateable:true,
                     ...(e.location_id && e.location_id.data
                       ? {
-                          locations: [
-                            {
-                              id: e?.location_id?.data?.id ? e?.location_id?.data?.id : ""
+                        location_ids: [
+                            
+                               e?.location_id?.data?.id ? e?.location_id?.data?.id : ""
                              
-                            },
+                            ,
                           ],
                         }
                       : {}),
