@@ -32,19 +32,25 @@ export const init = async (filter: any) => {
   //   const phoneNumberWithoutCountryCode = removeCountryCode(phoneNumber);
 
   //console.log("FILTERRR",filter.message.order.items)
-  const itemIds = filter.message.order.items.map((item:any) => item.id);
-  console.log(itemIds)
-  filter.context["action"] = "on_init";
+  //const commerceWorkFlow = config.ECOMMERCE.split(",");
+  //if (commerceWorkFlow.includes(filter.context.domain))
+ // { 
+    const itemIds = filter.message.order.items.map((item:any) => item.id);
+    console.log(itemIds)
+    filter.context["action"] = "on_init";
+    
+    filter.context["bpp_id"] =
+      "beckn-strapi-sandbox-bpp";
   
-  filter.context["bpp_id"] =
-    "beckn-strapi-sandbox-bpp-network.becknprotocol.io";
-
-  filter.context["bpp_uri"] =
-    "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
-
-    const output={
-      context:filter.context,
-      message:filter.message
-    }
-  return output
+    filter.context["bpp_uri"] =
+      "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+  
+      const output={
+        context:filter.context,
+        message:filter.message
+      }
+      return output
+    //}
+    
 };
+

@@ -162,7 +162,7 @@ export const search = async (filter: any) => {
     const domainFilterQuery = `domain_id:{DomainName:{eq:"${filter.context.domain}"}}`;
     filter.context["action"] = "on_search";
     filter.context["bpp_id"] =
-      "beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+      "beckn-strapi-sandbox-bpp";
     filter.context["bpp_uri"] =
       "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
     if (commerceWorkFlow.includes(filter.context.domain)) {

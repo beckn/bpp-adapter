@@ -121,7 +121,7 @@ export const select = async (filter: any) => {
         filter.context["action"] = "on_select";
   
         filter.context["bpp_id"] =
-          "beckn-strapi-sandbox-bpp-network.becknprotocol.io";
+          "beckn-strapi-sandbox-bpp";
   
         filter.context["bpp_uri"] =
           "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
