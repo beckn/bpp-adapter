@@ -153,6 +153,7 @@ filter.context["bpp_uri"] =
               id:res.id,
               descriptor:{
                 name:res.attributes.name,
+                code:res.attributees.code,
                 long_desc:res.attributes.long_desc,
                 short_desc:res.attributes.short_desc,
                 images: [
@@ -161,7 +162,7 @@ filter.context["bpp_uri"] =
                   }
               ]
               },
-              category_ids: [filter.message.order.items[0].category_ids],
+              category_ids: filter.message.order.items[0].category_ids,
            
                quote:{
                 price: {
