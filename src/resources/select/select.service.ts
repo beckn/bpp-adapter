@@ -21,6 +21,7 @@ const selectItem = async (itemValue: any, fields: string, table: string) => {
 export const select = async (filter: any) => {
   try {
     if (filter.context.domain.trim() === "online-dispute-resolution:0.1.0") {
+      console.log("ENTEREEDDDD")
       const itemArray = filter.message.order.items;
       console.log(itemArray);
       const itemValue = itemArray.map((obj: { id: string }) => obj.id);
@@ -150,13 +151,13 @@ export const select = async (filter: any) => {
                   },
                 ],
               },
-              categories: {
+              categories: [{
                 id: catData.id,
                 descriptor: {
                   code: catData.attributes.category_code,
                   name: catData.attributes.value,
                 },
-              },
+              }],
             },
             items: [
               {
