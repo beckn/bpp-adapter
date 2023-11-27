@@ -156,6 +156,319 @@ const itemFilter = async (
 
 export const search = async (filter: any) => {
   try {
+    if (filter.context.domain.trim()==="online-dispute-resolution:0.1.0")
+    {
+      const categoryName = filter.message.intent.category.descriptor.name.trim()
+
+
+   const itemName=filter.message.intent.item.descriptor.name.trim()
+   const itemQueryFilter=`filters:{items:{name:{containsi:"${itemName}"}}}`
+   const query = `query {
+    ${queryTable} (
+      ${itemQueryFilter}
+    )
+    ${queryFields}
+  }`;
+
+  const result = await makeGraphQLRequest(query)
+  //Filter the request payload items from items array
+  const providers = result.data.providers.data;
+  function containsValue(item: any, values: any) {
+    const name = item.attributes.name.toLowerCase();
+    return values.some((value: any) => name.includes(value.toLowerCase()));
+  }
+  const requestPayloadItem = filter.message.intent.item.descriptor.name
+    .split(",")
+    .filter(Boolean);
+  // Use the filter method to filter the items based on the request payload.This happens when provider lists all the items under them
+  const filteredItems = providers.reduce((result: any, obj: any) => {
+    const filteredData = obj.attributes.items.data.filter((item: any) =>
+      containsValue(item, requestPayloadItem)
+    );
+    if (filteredData.length > 0) {
+      result.push({
+        id: obj.id,
+        provider_name: obj.attributes.provider_name,
+        short_desc: obj.attributes.short_desc,
+        long_desc: obj.attributes.long_desc,
+        provider_uri: obj.attributes.provider_uri,
+        category_ids: obj.attributes.category_ids,
+        domain_id: obj.attributes.category_ids,
+        location_id: obj.attributes.location_id,
+        logo: obj.attributes.logo,
+        items: filteredData,
+      });
+    }
+    return result;
+  }, []);
+
+
+   //Fetch tag ids of item
+   const fetchTagId = filteredItems
+   .flatMap((provider: any) =>
+     provider.items.flatMap((item: any) =>
+       item.attributes.cat_attr_tag_relations.data
+         .filter(
+           (tagTaxonomy: any) => tagTaxonomy.attributes.taxanomy === "TAG"
+         )
+         .map((tagTaxonomy: any) => ({
+           itemId: item.id,
+           tagId: tagTaxonomy.attributes.taxanomy_id,
+         }))
+     )
+   )
+   .reduce((accumulator: any, currentValue: any) => {
+     const existingItem = accumulator.find(
+       (item: any) => item.itemId === currentValue.itemId
+     );
+     if (existingItem) {
+       existingItem.tagIds.push(currentValue.tagId);
+     } else {
+       accumulator.push({
+         itemId: currentValue.itemId,
+         tagIds: [currentValue.tagId],
+       });
+     }
+     return accumulator;
+   }, []);
+
+
+ //Fetch tag details of an item
+ const tagData = await Promise.all(
+   fetchTagId.map(async (item: any) => {
+     const tagQuery = `query {
+     tags (filters:{id:{in:[${item.tagIds}]}}){
+       data{
+         id
+         attributes
+         {
+           tag_name
+           code
+           value
+           tag_group_id
+           {
+             data
+             {
+               id
+               attributes
+               {
+                 tag_group_name
+               }
+             }
+           }
+         }
+       }
+     }
+   }
+
+     `;
+     const tag = await makeGraphQLRequest(tagQuery);
+     return {
+       itemId: item.itemId,
+       tag: tag.data.tags.data,
+     };
+   })
+ );
+ console.log("tagData", JSON.stringify(tagData));
+
+//Fetch categoryids of an item
+const fetchCatId = filteredItems
+.flatMap((provider: any) =>
+  provider.items.flatMap((item: any) =>
+    item.attributes.cat_attr_tag_relations.data
+      .filter(
+        (catTaxonomy: any) =>
+          catTaxonomy.attributes.taxanomy === "CATEGORY"
+      )
+      .map((catTaxonomy: any) => ({
+        itemId: item.id,
+        catId: catTaxonomy.attributes.taxanomy_id,
+      }))
+  )
+)
+.reduce((accumulator: any, currentValue: any) => {
+  const existingItem = accumulator.find(
+    (item: any) => item.itemId === currentValue.itemId
+  );
+  if (existingItem) {
+    existingItem.catIds.push(currentValue.catId);
+  } else {
+    accumulator.push({
+      itemId: currentValue.itemId,
+      catIds: [currentValue.catId],
+    });
+  }
+  return accumulator;
+}, []);
+console.log("Grouped Cat Data:", JSON.stringify(fetchCatId));
+
+//Fetch category details of an item
+const catData = await Promise.all(
+fetchCatId.map(async (item: any) => {
+  const catQuery = `query {
+categories (filters:{id:{in:[${item.catIds}]}}){
+data{
+  id
+  attributes
+  {
+    value
+    parent_id
+    {
+      data{
+        id
+        attributes
+        {
+          category_code
+          value
+        }
+      }
+    }
+  }
+
+}
+}
+}`;
+  const cat = await makeGraphQLRequest(catQuery);
+  return {
+    itemId: item.itemId,
+    cat: cat.data.categories.data,
+  };
+})
+);
+ //Add tags to item array
+ const itemTagsMap = new Map();
+
+ tagData.forEach((tagDetail) => {
+   const { itemId, tag } = tagDetail;
+   itemTagsMap.set(itemId, tag);
+ });
+ const providersWithTags = filteredItems.map((provider: any) => ({
+   ...provider,
+   items: provider.items.map((item: any) => ({
+     ...item,
+     tags: itemTagsMap.get(item.id) || [], // Default to an empty array if no tags are found
+   })),
+ }));
+
+  //Add categories to item array
+  const itemTagsCatMap = new Map();
+  catData.forEach((catDetail) => {
+    const { itemId, cat } = catDetail;
+    itemTagsCatMap.set(itemId, cat);
+  });
+  const providersWithTagsAndCat = providersWithTags.map((provider: any) => ({
+    ...provider,
+    items: provider.items.map((item: any) => ({
+      ...item,
+      categories: itemTagsCatMap.get(item.id) || [], // empty array if no tags are found
+    })),
+  }));
+
+
+      return{
+        context:filter.context,
+        message:{
+          catalog: {
+            descriptor: {
+              name: "BPP",
+              code: "bpp",
+              short_desc: "Unified Strapi BPP",
+            },
+        },
+        providers: providersWithTagsAndCat.map((e: any) => {
+          return {
+            id: e.id,
+            descriptor: {
+              name: e?.provider_name ? e?.provider_name : "",
+              short_desc: e?.short_desc ? e?.short_desc : "",
+              long_desc: e?.long_desc ? e?.long_desc : "",
+              additional_desc: {
+                url: e?.provider_uri ? e?.provider_uri : "http://abc.com/image.jpg",
+              },
+              images: [
+                {
+                  url: e?.logo?.data?.attributes?.url
+                    ? e?.logo?.data?.attributes?.url
+                    : "http://abc.com/image.jpg",
+                },
+              ],
+            },
+         //Add categories for provider if exists
+            ...(e?.category_ids?.data && e.category_ids.data.length > 0
+              ? {
+                  categories: e.category_ids.data.map((cat:any) => {
+                    // Check if attributes.value exists
+                    return cat.attributes && cat.attributes.value
+                      ? {
+                          id: cat.id,
+                          descriptor: {
+                            code:cat.attributes.category_code,
+                            name: cat.attributes.value,
+                          },
+                        }
+                      : null; // Return null for categories with missing attributes.value
+                  }).filter(Boolean), // Remove null values from the array
+                }
+              : {}),
+        
+        
+           
+           
+            items:e.items.map((item:any)=>{
+              return{
+                id:item?.id,
+                descriptor:{
+                  name:item?.attributes?.name?item?.attributes?.name:"",
+                  code:item?.attributes?.code?item?.attributes?.code:"",
+                  short_desc:item?.attributes?.short_desc?item?.attributes?.short_desc:"",
+                  long_desc:item?.attributes?.long_desc?item?.attributes?.long_desc:"",
+                  //check if images exist for item if so then add
+                  // ...(item?.attributes?.image?.data && item?.attributes?.image.data.length > 0
+                  //   ? {
+                  //     images: item.attributes.image.data.map((img:any) => {
+                  //         // Check if attributes.value exists
+                  //         return img.attributes && img.attributes.url
+                  //           ? {
+                  //             url:img.attributes.url
+                  //             }
+                  //           : null; // Return null for categories with missing attributes.value
+                  //       }).filter(Boolean), // Remove null values from the array
+                  //     }
+                  //   : {}),
+                },
+                rateable:true,
+               
+                category_ids:item.categories.map((cat:any)=>
+                  
+                    cat?.id?cat?.id:""
+                  
+                ),
+               
+                tags:item.tags.map((tag:any)=>{
+               return{
+                display:true,
+                descriptor:{
+                  
+                  code:tag?.attributes?.code?tag?.attributes?.code:"",
+                  name:tag?.attributes?.tag_name?tag?.attributes?.tag_name:"",
+                },
+                list:[
+               {
+                value:tag?.attributes?.value?tag?.attributes?.value:"",
+                display:true
+               }
+                ]
+               }
+                })
+
+              }
+            })
+          };
+        })
+      }
+    }
+  }
+ 
     const commerceWorkFlow = config.ECOMMERCE.split(",");
     const appointmentWorkFlow = config.APPOINTMENT.split(",");
     const category = filter.message.intent.category;

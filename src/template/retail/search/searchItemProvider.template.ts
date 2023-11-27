@@ -13,6 +13,7 @@ export const queryFields = `{
           id
           attributes
           {
+            category_code
             value
           }
         }
