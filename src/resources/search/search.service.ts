@@ -427,18 +427,18 @@ data{
                   short_desc:item?.attributes?.short_desc?item?.attributes?.short_desc:"",
                   long_desc:item?.attributes?.long_desc?item?.attributes?.long_desc:"",
                   //check if images exist for item if so then add
-                  // ...(item?.attributes?.image?.data && item?.attributes?.image.data.length > 0
-                  //   ? {
-                  //     images: item.attributes.image.data.map((img:any) => {
-                  //         // Check if attributes.value exists
-                  //         return img.attributes && img.attributes.url
-                  //           ? {
-                  //             url:img.attributes.url
-                  //             }
-                  //           : null; // Return null for categories with missing attributes.value
-                  //       }).filter(Boolean), // Remove null values from the array
-                  //     }
-                  //   : {}),
+                  ...(item?.attributes?.image?.data && item?.attributes?.image.data.length > 0
+                    ? {
+                      images: item.attributes.image.data.map((img:any) => {
+                          // Check if attributes.value exists
+                          return img.attributes && img.attributes.url
+                            ? {
+                              url:img.attributes.url
+                              }
+                            : null; // Return null for categories with missing attributes.value
+                        }).filter(Boolean), // Remove null values from the array
+                      }
+                    : {}),
                 },
                 rateable:true,
                
