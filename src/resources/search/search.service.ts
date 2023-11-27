@@ -160,7 +160,11 @@ export const search = async (filter: any) => {
     {
       const categoryName = filter.message.intent.category.descriptor.name.trim()
 
-
+      filter.context["action"] = "on_search";
+      filter.context["bpp_id"] =
+        "beckn-strapi-sandbox-bpp";
+      filter.context["bpp_uri"] =
+        "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
    const itemName=filter.message.intent.item.descriptor.name.trim()
    const itemQueryFilter=`filters:{items:{name:{containsi:"${itemName}"}}}`
    const query = `query {
