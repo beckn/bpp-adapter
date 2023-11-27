@@ -153,7 +153,7 @@ filter.context["bpp_uri"] =
               id:res.id,
               descriptor:{
                 name:res.attributes.name,
-                code:res.attributees.code,
+                code:res.attributes.code,
                 long_desc:res.attributes.long_desc,
                 short_desc:res.attributes.short_desc,
                 images: [
