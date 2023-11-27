@@ -4,6 +4,7 @@ import * as searchService from "../search/search.service";
 import * as selectService from "../select/select.service";
 import * as initService from "../init/init.service";
 import * as confirmService from "../confirm/confirm.service";
+import * as xInputService from "../xInput/xInput.service"
 import axiosInstance from "axios";
 import https from 'https'
 import config from "../../config";
@@ -36,7 +37,7 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 if(result)
                 {
                   console.log("ENTER:")
-              await webhookCall(result,responseAction)
+             await webhookCall(result,responseAction)
                   //response.status(httpStatus.OK).send(result);
                 }
                 
@@ -73,6 +74,17 @@ export default function defineBppHandlerRoutes(expressApp: express.Application) 
                 //response.status(httpStatus.OK).send(result);
               }
           }
+          if(filter.context.action==="xInput"){
+            const result = await xInputService.xInput(filter);
+         
+            
+            if(result)
+            {
+              console.log(JSON.stringify(result))
+             //await webhookCall(result,responseAction)
+              response.status(httpStatus.OK).send(result);
+            }
+        }
             
 
             //response.status(httpStatus.OK).send({"success": "ACK"});
