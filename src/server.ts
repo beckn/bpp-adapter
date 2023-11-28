@@ -6,6 +6,8 @@ import { AddressInfo } from "net";
 import { Server } from "http";
 import { inspect } from "util";
 
+import cors from 'cors'
+
 import config from "./config";
 
 import AppError from "./library/exception";
@@ -22,6 +24,8 @@ let connection: Server;
 
 export const startAppServer = async (): Promise<AddressInfo> => {
   const expressApp = express();
+
+  expressApp.use(cors())
 
   expressApp.use(express.urlencoded({ extended: true, limit: "50mb" }));
   expressApp.use(express.json({ limit: "50mb" }));

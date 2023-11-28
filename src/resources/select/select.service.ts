@@ -85,6 +85,7 @@ export const select = async (filter: any) => {
                     total_sales
                     currency
                     base_fee
+                    additional_fee
                   }
                 }
               }
@@ -209,7 +210,11 @@ export const select = async (filter: any) => {
                 {
                   title: "Fee per hearing",
                   price: {
-                    value: "500",
+                    value: res?.attributes?.sc_retail_product?.data?.attributes
+                    ?.additional_fee
+                    ? res?.attributes?.sc_retail_product?.data?.attributes
+                        ?.additional_fee
+                    : "0",
                     currency: res?.attributes?.sc_retail_product?.data
                       ?.attributes?.currency
                       ? res?.attributes?.sc_retail_product?.data?.attributes
