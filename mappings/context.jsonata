@@ -1,0 +1,13 @@
+{
+    "domain": domain,
+    "bpp_id": $env.BPP_ID,
+    "bpp_uri": $env.BPP_URI,
+    "bap_id": bap_id,
+    "action": $action,
+    "bap_uri": bap_uri,
+    "version": "1.1.0",
+    "transaction_id": transaction_id ? transaction_id : $uuid(),
+    "message_id": message_id ? message_id : $uuid(),
+    "location": location,
+    "timestamp": $moment().toISOString()
+}

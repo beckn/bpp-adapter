@@ -1,41 +1,24 @@
 import express from "express";
-import mongoose from "mongoose";
 import httpStatus from "http-status";
-
 import { AddressInfo } from "net";
 import { Server } from "http";
-import { inspect } from "util";
-
 import cors from 'cors'
-
 import config from "./config";
-
 import AppError from "./library/exception";
 import Logger from "./library/logger";
-
-
-
-import defineHealthRoutes from "./resources/health/health.route";
-
-import defineBppHandlerRoutes from "./resources/bppHandler/bppHandler.route";
-
+import { server } from './inversify/inversify.config';
 
 let connection: Server;
-
 export const startAppServer = async (): Promise<AddressInfo> => {
   const expressApp = express();
+  server.setConfig((expressApp) => {
+    expressApp.use(express.json({ limit: "50mb" }));
+    expressApp.use(express.urlencoded({ extended: true, limit: "50mb" }))
+  });
+  expressApp.use(server.build());
+  expressApp.use(cors());
 
-  expressApp.use(cors())
-
-  expressApp.use(express.urlencoded({ extended: true, limit: "50mb" }));
-  expressApp.use(express.json({ limit: "50mb" }));
-
-  defineHealthRoutes(expressApp)
-  
-  defineBppHandlerRoutes(expressApp)
-
-
-  expressApp.use((request, response, next) => {
+  expressApp.use((request, _response, next) => {
     try {
       throw new AppError(
         "ROUTE_NOT_FOUND",
@@ -47,7 +30,6 @@ export const startAppServer = async (): Promise<AddressInfo> => {
     }
   });
 
-  
   handleErrorRoute(expressApp);
   const APIAddress = await openConnection(expressApp);
   return APIAddress;
@@ -61,17 +43,7 @@ const openConnection = async (
       name: "Application",
     });
     connection = expressApp.listen(config.PORT, () => {
-      // mongoose
-      //   .connect(config.DATABASE_URL, {
-      //     autoCreate: true,
-      //   })
-      //   .then(() => {
-      //     Logger.info("ENV config::", config);
-      //     Logger.info("Mongodb connected", {
-      //       name: "Application",
-      //     });
-          resolve(connection.address() as AddressInfo);
-        // });
+      resolve(connection.address() as AddressInfo);
     });
   });
 };
@@ -90,21 +62,21 @@ const handleErrorRoute = (expressApp: express.Application) => {
         .send(
           error instanceof AppError
             ? {
-                success: false,
-                error: true,
-                errorType: error.name,
-                statusCode: error.HTTPStatus,
-                message: error.message,
-              }
+              success: false,
+              error: true,
+              errorType: error.name,
+              statusCode: error.HTTPStatus,
+              message: error.message,
+            }
             : {
-                success: false,
-                error: true,
-                errorType: "internal server error",
-                message: error.message
-                  ? error.message
-                  : "internal server error",
-                statusCode: 500,
-              }
+              success: false,
+              error: true,
+              errorType: "internal server error",
+              message: error.message
+                ? error.message
+                : "internal server error",
+              statusCode: 500,
+            }
         )
         .end();
     }

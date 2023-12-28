@@ -9,13 +9,13 @@ export const confirm = async (filter: any) => {
     console.log(itemArray);
     const itemValue = itemArray.map((obj: { id: string }) => `"${obj.id}"`);
     console.log(itemValue);
-  
+
     const currentDate = new Date();
     const isoString = currentDate.toISOString();
     console.log(isoString)
-  
 
-    const queryMutation=`mutation {
+
+    const queryMutation = `mutation {
         createOrder(
           data: {
            status:"ACTIVE"
@@ -32,12 +32,12 @@ export const confirm = async (filter: any) => {
         }
       }`
 
-    const confirmResponse= await makeGraphQLRequest(queryMutation)
+    const confirmResponse = await makeGraphQLRequest(queryMutation)
 
-    const order_id=confirmResponse.data.createOrder.data.id
-    const order_status=confirmResponse.data.createOrder.data.attributes.status
-//Fetch Fulfillment information
-const fulfilmentQuery=`query{
+    const order_id = confirmResponse.data.createOrder.data.id
+    const order_status = confirmResponse.data.createOrder.data.attributes.status
+    //Fetch Fulfillment information
+    const fulfilmentQuery = `query{
   itemFulfillments (filters:{item_id:{id:{in:[${itemValue.toString()}]}}})
   {
     data
@@ -94,9 +94,9 @@ const fulfilmentQuery=`query{
     
   }
 }`
-const fulfillmentResponse = await makeGraphQLRequest(fulfilmentQuery);
-console.log("fulfillmentResponse",JSON.stringify(fulfillmentResponse))
-const fulfillmentData=fulfillmentResponse.data.itemFulfillments.data
+    const fulfillmentResponse = await makeGraphQLRequest(fulfilmentQuery);
+    console.log("fulfillmentResponse", JSON.stringify(fulfillmentResponse))
+    const fulfillmentData = fulfillmentResponse.data.itemFulfillments.data
 
     const query = `query {
 items(filters: { id: { in: [${itemValue}] } }) {
@@ -285,7 +285,7 @@ categories (filters:{id:{in:[${fetchCategory}]}})
               currency: res?.attributes?.sc_retail_product?.data?.attributes
                 ?.currency
                 ? res?.attributes?.sc_retail_product?.data?.attributes
-                    ?.currency
+                  ?.currency
                 : "INR",
             },
           },
@@ -296,12 +296,12 @@ categories (filters:{id:{in:[${fetchCategory}]}})
                 value: res?.attributes?.sc_retail_product?.data?.attributes
                   ?.base_fee
                   ? res?.attributes?.sc_retail_product?.data?.attributes
-                      ?.base_fee
+                    ?.base_fee
                   : "0",
                 currency: res?.attributes?.sc_retail_product?.data
                   ?.attributes?.currency
                   ? res?.attributes?.sc_retail_product?.data?.attributes
-                      ?.currency
+                    ?.currency
                   : "INR",
               },
             },
@@ -309,73 +309,73 @@ categories (filters:{id:{in:[${fetchCategory}]}})
               title: "Fee per hearing",
               price: {
                 value: res?.attributes?.sc_retail_product?.data?.attributes
-                ?.additional_fee
-                ? res?.attributes?.sc_retail_product?.data?.attributes
+                  ?.additional_fee
+                  ? res?.attributes?.sc_retail_product?.data?.attributes
                     ?.additional_fee
-                : "0",
+                  : "0",
                 currency: res?.attributes?.sc_retail_product?.data
                   ?.attributes?.currency
                   ? res?.attributes?.sc_retail_product?.data?.attributes
-                      ?.currency
+                    ?.currency
                   : "INR",
               },
             },
           ],
-          billing:filter.message.order.billing,
+          billing: filter.message.order.billing,
           cancellation_terms: [
             {
-                fulfillment_state: {
-                    descriptor: {
-                        code: res?.attributes?.sc_retail_product?.data?.attributes?.product_cancel?.data[0]?.attributes?.state?res?.attributes?.sc_retail_product?.data?.attributes?.product_cancel?.data[0]?.attributes?.state:"Initiated"
-                    }
-                },
-                cancellation_fee: {
-                  percentage: res?.attributes?.sc_retail_product?.data?.attributes?.product_cancel?.data[0]?.attributes?.cancel_term_id?.data?.attributes?.cancellation_fee?res?.attributes?.sc_retail_product?.data?.attributes?.product_cancel?.data[0]?.attributes?.cancel_term_id?.data?.attributes?.cancellation_fee:"25%"
-                },
-                external_ref: {
-                    mimetype: "text/html",
-                    url: "https://alpha.in/charge/tnc.html"
+              fulfillment_state: {
+                descriptor: {
+                  code: res?.attributes?.sc_retail_product?.data?.attributes?.product_cancel?.data[0]?.attributes?.state ? res?.attributes?.sc_retail_product?.data?.attributes?.product_cancel?.data[0]?.attributes?.state : "Initiated"
                 }
+              },
+              cancellation_fee: {
+                percentage: res?.attributes?.sc_retail_product?.data?.attributes?.product_cancel?.data[0]?.attributes?.cancel_term_id?.data?.attributes?.cancellation_fee ? res?.attributes?.sc_retail_product?.data?.attributes?.product_cancel?.data[0]?.attributes?.cancel_term_id?.data?.attributes?.cancellation_fee : "25%"
+              },
+              external_ref: {
+                mimetype: "text/html",
+                url: "https://alpha.in/charge/tnc.html"
+              }
             }
-        ],
-        payments:filter.message.order.payments,
-        fulfillments:[
-          {
-            customer:filter.message.order.fulfillments[0].customer,
-            
+          ],
+          payments: filter.message.order.payments,
+          fulfillments: [
+            {
+              customer: filter.message.order.fulfillments[0].customer,
+
               agent: {
                 person: {
-                    id: fulfillmentData[0]?.attributes?.fulfilment_id?.data.attributes?.agent_id?.data?.id,
-                    name: fulfillmentData[0]?.attributes?.fulfilment_id?.data.attributes?.agent_id?.data?.attributes?.first_name
+                  id: fulfillmentData[0]?.attributes?.fulfilment_id?.data.attributes?.agent_id?.data?.id,
+                  name: fulfillmentData[0]?.attributes?.fulfilment_id?.data.attributes?.agent_id?.data?.attributes?.first_name
                 },
                 contact: {
-                    phone: fulfillmentData[0]?.attributes?.fulfilment_id?.data.attributes?.agent_id?.data?.attributes?.agent_profile?.data?.attributes?.phone_number,
-                    email: fulfillmentData[0]?.attributes?.fulfilment_id?.data.attributes?.agent_id?.data?.attributes?.agent_profile?.data?.attributes?.email
+                  phone: fulfillmentData[0]?.attributes?.fulfilment_id?.data.attributes?.agent_id?.data?.attributes?.agent_profile?.data?.attributes?.phone_number,
+                  email: fulfillmentData[0]?.attributes?.fulfilment_id?.data.attributes?.agent_id?.data?.attributes?.agent_profile?.data?.attributes?.email
                 }
-            },
-            state: {
+              },
+              state: {
                 descriptor: {
-                    code: fulfillmentData[0]?.attributes?.state,
-                    "name": "Dispute Order Confirmed"
+                  code: fulfillmentData[0]?.attributes?.state,
+                  "name": "Dispute Order Confirmed"
                 },
                 updated_at: fulfillmentData[0]?.attributes?.updated_at
-            },
-            stops: [
+              },
+              stops: [
                 {
-                    "instructions": {
-                        "name": "Instructions after order confirm",
-                        "short_desc": "Navigate to the following provider link to continue the order",
-                        "media": [
-                            {
-                                "url": "https://alpha-odr-network-bpp.becknprotocol.io/dispute"
-                            }
-                        ]
-                    }
+                  "instructions": {
+                    "name": "Instructions after order confirm",
+                    "short_desc": "Navigate to the following provider link to continue the order",
+                    "media": [
+                      {
+                        "url": "https://alpha-odr-network-bpp.becknprotocol.io/dispute"
+                      }
+                    ]
+                  }
                 }
-            ]
-            
-          }
-        ]
+              ]
+
+            }
+          ]
         },
       },
     };
@@ -386,18 +386,18 @@ categories (filters:{id:{in:[${fetchCategory}]}})
 
 
 
-    console.log("ENTEREDL::::");
-    const itemArray = filter.message.order.items;
-    console.log(itemArray);
-    const itemValue = itemArray.map((obj: { id: string }) => `"${obj.id}"`);
-    console.log(itemValue);
-  
-    const currentDate = new Date();
-    const isoString = currentDate.toISOString();
-    console.log(isoString)
-  
+  console.log("ENTEREDL::::");
+  const itemArray = filter.message.order.items;
+  console.log(itemArray);
+  const itemValue = itemArray.map((obj: { id: string }) => `"${obj.id}"`);
+  console.log(itemValue);
 
-    const query=`mutation {
+  const currentDate = new Date();
+  const isoString = currentDate.toISOString();
+  console.log(isoString)
+
+
+  const query = `mutation {
         createOrder(
           data: {
            status:"ACTIVE"
@@ -414,27 +414,27 @@ categories (filters:{id:{in:[${fetchCategory}]}})
         }
       }`
 
-    const confirmResponse= await makeGraphQLRequest(query)
-    console.log(confirmResponse,JSON.stringify(confirmResponse))
+  const confirmResponse = await makeGraphQLRequest(query)
+  console.log(confirmResponse, JSON.stringify(confirmResponse))
 
-    filter.context["action"] = "on_confirm";
-  
+  filter.context["action"] = "on_confirm";
+
   filter.context["bpp_id"] =
     "beckn-strapi-sandbox-bpp-network.becknprotocol.io";
 
   filter.context["bpp_uri"] =
     "https://beckn-strapi-sandbox-bpp-network.becknprotocol.io";
 
-    const output={
-      context:filter.context,
-      message:
-      {
-        order:{
-            id:confirmResponse.data.createOrder.data.id,
-            status:confirmResponse.data.createOrder.data.attributes.status,
-            ...filter.message.order
-        }
+  const output = {
+    context: filter.context,
+    message:
+    {
+      order: {
+        id: confirmResponse.data.createOrder.data.id,
+        status: confirmResponse.data.createOrder.data.attributes.status,
+        ...filter.message.order
       }
     }
-    return output;
-  };
+  }
+  return output;
+};

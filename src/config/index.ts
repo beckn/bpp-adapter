@@ -17,15 +17,11 @@ const envSchema = z.object({
     .string()
     .default("3000")
     .transform((str) => parseInt(str, 10)),
-    STRAPI_API: z.string(),
-    API_TOKEN: z.string(),
-    ECOMMERCE:z.string(),
-    APPOINTMENT:z.string(),
-    BPP_URL:z.string()
-
- // DATABASE_URL: z.string().describe("mongo db url"),
-
-  
+  STRAPI_API: z.string(),
+  API_TOKEN: z.string(),
+  ECOMMERCE: z.string(),
+  APPOINTMENT: z.string(),
+  PROTOCOL_SERVER_URL: z.string()
 });
 
 const envVars = envSchema.parse(process.env);
@@ -33,12 +29,12 @@ const envVars = envSchema.parse(process.env);
 const config = {
   NODE_ENV: envVars.NODE_ENV,
   PORT: envVars.PORT,
- STRAPI_API:envVars.STRAPI_API,
- API_TOKEN:envVars.API_TOKEN,
- ECOMMERCE:envVars.ECOMMERCE,
-APPOINTMENT:envVars.APPOINTMENT,
-BPP_URL:envVars.BPP_URL
+  STRAPI_API: envVars.STRAPI_API,
+  API_TOKEN: envVars.API_TOKEN,
+  ECOMMERCE: envVars.ECOMMERCE,
+  APPOINTMENT: envVars.APPOINTMENT,
+  PROTOCOL_SERVER_URL: envVars.PROTOCOL_SERVER_URL
 
- };
+};
 
 export default config;
