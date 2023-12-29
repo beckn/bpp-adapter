@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { controller, httpGet, interfaces, request, response } from 'inversify-express-utils';
+import { controller, httpGet, httpPost, interfaces, request, requestBody, response } from 'inversify-express-utils';
 import httpStatus from "http-status";
 
 @controller('/api/v1/health')
@@ -21,5 +21,10 @@ export class HealthController implements interfaces.Controller {
       res.status(httpStatus.SERVICE_UNAVAILABLE).send();
       return undefined;
     }
+  }
+
+  @httpPost('/webhook')
+  public async webhook(@requestBody() body: any): Promise<any> {
+    console.log('\n\n\nWebhook Response -', JSON.stringify(body));
   }
 }
