@@ -7,7 +7,7 @@ export class HealthController implements interfaces.Controller {
   constructor() { }
 
   @httpGet('/')
-  public async get(@request() req: Request, @response() res: Response): Promise<void> {
+  public async get(@request() _req: Request, @response() res: Response): Promise<void> {
     const healthCheck = {
       sucess: true,
       uptime: process.uptime(),
