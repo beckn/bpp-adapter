@@ -21,7 +21,8 @@ const envSchema = z.object({
   API_TOKEN: z.string(),
   ECOMMERCE: z.string(),
   APPOINTMENT: z.string(),
-  PROTOCOL_SERVER_URL: z.string()
+  PROTOCOL_SERVER_URL: z.string(),
+  ADAPTER_BASE_URL: z.string(),
 });
 
 const envVars = envSchema.parse(process.env);
@@ -33,8 +34,8 @@ const config = {
   API_TOKEN: envVars.API_TOKEN,
   ECOMMERCE: envVars.ECOMMERCE,
   APPOINTMENT: envVars.APPOINTMENT,
-  PROTOCOL_SERVER_URL: envVars.PROTOCOL_SERVER_URL
-
+  PROTOCOL_SERVER_URL: envVars.PROTOCOL_SERVER_URL,
+  ADAPTER_BASE_URL: envVars.ADAPTER_BASE_URL,
 };
 
 export default config;

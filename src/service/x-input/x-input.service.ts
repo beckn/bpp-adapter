@@ -6,7 +6,6 @@ export class XInputService {
   constructor() { }
 
   async xInput(filter: any) {
-
     const currentDate = new Date();
     const isoString = currentDate.toISOString();
 
@@ -14,7 +13,6 @@ export class XInputService {
     createInputDetail(
       data: {
        form_data: ${filter}
-      form_id:"${filter.message.formId}"
       publishedAt:"${isoString}"
       }
     ) {

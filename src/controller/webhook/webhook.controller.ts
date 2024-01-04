@@ -54,19 +54,11 @@ export class WebhookController implements interfaces.Controller {
                     result = await this.statusService.status(body);
                     responseAction = "on_status";
                     break;
-
-                case "xInput":
-                    result = await this.xInputService.xInput(body);
-                    break;
             }
             let transformedData = {};
-            if (!["xInput"].includes(action)) {
-                transformedData = await this.tLService.transform(result, responseAction);
-            } else {
-                transformedData = result;
-            }
-            // await this.webhookCall(transformedData, responseAction);
-            return transformedData;
+            transformedData = await this.tLService.transform(result, responseAction);
+            await this.webhookCall(transformedData, responseAction);
+            // return transformedData;
         } catch (error) {
             throw error;
         }

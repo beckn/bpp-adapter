@@ -1,6 +1,7 @@
 import { injectable } from "inversify";
 import { makeGraphQLRequest } from "../../util/api";
 import { DOMAIN } from "../../constants";
+import config from "../../config";
 
 @injectable()
 export class InitService {
@@ -75,9 +76,9 @@ export class InitService {
      }
    }
  }
-}`
+}`;
       const response = await makeGraphQLRequest(query).then((res) => res.data);
-      const res = response.items.data[0]
+      const res = response.items.data[0];
 
       const fetchCategory = filter.message.order.items[0].category_ids[0];
       const fetchCategoryQuery = `query
@@ -94,9 +95,9 @@ export class InitService {
      }
    }
  }
-}`
-      const categoryresponse = await makeGraphQLRequest(fetchCategoryQuery)
-      const catData = categoryresponse.data.categories.data[0]
+}`;
+      const categoryresponse = await makeGraphQLRequest(fetchCategoryQuery);
+      const catData = categoryresponse.data.categories.data[0];
       const itemDataOrder: any = {
         provider: {
           id: res?.attributes?.provider?.data?.id,
@@ -104,12 +105,10 @@ export class InitService {
             name: res?.attributes?.provider?.data?.attributes?.provider_name
               ? res?.attributes?.provider?.data?.attributes?.provider_name
               : "",
-            short_desc: res?.attributes?.provider?.data?.attributes
-              ?.short_desc
+            short_desc: res?.attributes?.provider?.data?.attributes?.short_desc
               ? res?.attributes?.provider?.data?.attributes?.short_desc
               : "",
-            long_desc: res?.attributes?.provider?.data?.attributes
-              ?.long_desc
+            long_desc: res?.attributes?.provider?.data?.attributes?.long_desc
               ? res?.attributes?.provider?.data?.attributes?.long_desc
               : "",
             additional_desc: {
@@ -125,13 +124,15 @@ export class InitService {
               },
             ],
           },
-          categories: [{
-            id: catData.id,
-            descriptor: {
-              code: catData.attributes.category_code,
-              name: catData.attributes.value,
+          categories: [
+            {
+              id: catData.id,
+              descriptor: {
+                code: catData.attributes.category_code,
+                name: catData.attributes.value,
+              },
             },
-          }],
+          ],
         },
         items: [
           {
@@ -152,6 +153,12 @@ export class InitService {
             category_ids: filter.message.order.items[0].category_ids,
           },
         ],
+        xinput: {
+          form: {
+            url: `${config.ADAPTER_BASE_URL}/x-input/form?form_id=abcd`,
+            mime_type: "text/html",
+          },
+        },
         quote: {
           price: {
             value: res?.attributes?.sc_retail_product?.data?.attributes
@@ -160,8 +167,7 @@ export class InitService {
               : "0",
             currency: res?.attributes?.sc_retail_product?.data?.attributes
               ?.currency
-              ? res?.attributes?.sc_retail_product?.data?.attributes
-                ?.currency
+              ? res?.attributes?.sc_retail_product?.data?.attributes?.currency
               : "INR",
           },
           breakup: [
@@ -173,8 +179,8 @@ export class InitService {
                   ? res?.attributes?.sc_retail_product?.data?.attributes
                     ?.base_fee
                   : "0",
-                currency: res?.attributes?.sc_retail_product?.data
-                  ?.attributes?.currency
+                currency: res?.attributes?.sc_retail_product?.data?.attributes
+                  ?.currency
                   ? res?.attributes?.sc_retail_product?.data?.attributes
                     ?.currency
                   : "INR",
@@ -184,8 +190,8 @@ export class InitService {
               title: "Fee per hearing",
               price: {
                 value: "500",
-                currency: res?.attributes?.sc_retail_product?.data
-                  ?.attributes?.currency
+                currency: res?.attributes?.sc_retail_product?.data?.attributes
+                  ?.currency
                   ? res?.attributes?.sc_retail_product?.data?.attributes
                     ?.currency
                   : "INR",
@@ -193,31 +199,28 @@ export class InitService {
             },
           ],
         },
-      }
+      };
 
-      const billing: any = filter.message.order.billing
-      const fulfillmentDetail: any = filter.message.order.fulfillments
+      const billing: any = filter.message.order.billing;
+      const fulfillmentDetail: any = filter.message.order.fulfillments;
 
-      itemDataOrder["billing"] = billing
-      itemDataOrder["fulfillments"] = fulfillmentDetail
+      itemDataOrder["billing"] = billing;
+      itemDataOrder["fulfillments"] = fulfillmentDetail;
       const itemData = {
-        order: itemDataOrder
-      }
+        order: itemDataOrder,
+      };
 
       const result = {
         context: filter.context,
-        message: itemData
-      }
-      return result
-
+        message: itemData,
+      };
+      return result;
     }
 
     const output = {
       context: filter.context,
-      message: filter.message
-    }
-    return output
-  };
+      message: filter.message,
+    };
+    return output;
+  }
 }
-
-

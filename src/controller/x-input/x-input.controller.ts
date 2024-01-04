@@ -1,66 +1,81 @@
-import { Request, Response } from 'express';
-import fs from 'fs';
-import ejs from 'ejs';
-import { controller, httpPost, interfaces, requestBody, response } from 'inversify-express-utils';
+import { Response } from "express";
+import fs from "fs";
+import ejs from "ejs";
+import {
+  controller,
+  httpPost,
+  httpGet,
+  interfaces,
+  requestBody,
+  response,
+  queryParam
+} from "inversify-express-utils";
 import httpStatus from "http-status";
-import path from 'path';
+import path from "path";
 import appRootPath from "app-root-path";
-import Joi from 'joi'
 import { convertToJoiSchema } from "../../util/validate.util";
+import config from "../../config";
+import { XInputService } from "../../service/x-input/x-input.service";
+import { inject } from "inversify";
 
-
-
-@controller('/x-input')
+@controller("/x-input")
 export class XInputController implements interfaces.Controller {
-  constructor() { }
+  constructor(@inject(XInputService) private xInputService: XInputService,) { }
 
-  @httpPost('/form')
-  public async getForm(@requestBody() body: any, @response() res: Response): Promise<void> {
+  @httpGet("/form")
+  public async getForm(
+    @queryParam("form_id") form_id: string,
+    @response() res: Response
+  ): Promise<any> {
     try {
-      const { action } = body.context || {};
-      if (!action) {
-        res.status(httpStatus.BAD_REQUEST).send();
-        return;
+      if (!form_id) {
+        return res.status(httpStatus.BAD_REQUEST).send();
       }
-      
-      const template = fs.readFileSync(path.join(appRootPath.toString(), `/src/template/x-input/${action}/${action}.ejs`), "utf8")
+
+      const template = fs.readFileSync(
+        path.join(
+          appRootPath.toString(),
+          `/src/template/x-input/${form_id}.ejs`
+        ),
+        "utf8"
+      );
       const compiledTemplate = ejs.compile(template);
-      const renderedHTML = compiledTemplate();
-      res.setHeader('Content-Type', 'text/html');
+      const renderedHTML = compiledTemplate({ action: `${config.ADAPTER_BASE_URL}/x-input/submit` });
+      res.setHeader("Content-Type", "text/html");
       res.write(renderedHTML);
-      res.status(httpStatus.OK).send();
+      return res.status(httpStatus.OK).send();
     } catch (error) {
-      res.status(httpStatus.SERVICE_UNAVAILABLE).send();
-      return undefined;
+      return res.status(httpStatus.SERVICE_UNAVAILABLE).send();
     }
   }
-  @httpPost('/submit')
-  public async submitForm(@requestBody() body: any, @response() res: Response): Promise<void> {
+  @httpPost("/submit")
+  public async submitForm(
+    @requestBody() body: any,
+    @response() res: Response
+  ): Promise<any> {
     try {
-      interface Payload {
-        name?: string;
-        age?: number;
-        [key: string]: unknown; 
+      const { form_id } = body.message;
+      if (!form_id) {
+        return res.status(httpStatus.BAD_REQUEST).send();
       }
-      const { action } = body.context || {};
-      if (!action) {
-        res.status(httpStatus.BAD_REQUEST).send();
-        return;
-      }
-      const data=body.message
-      const validationRules=fs.readFileSync(path.join(appRootPath.toString(),`/src/template/x-input/on_init/validation_rules.json`),"utf-8")
+      const data = body.message;
+      const validationRules = fs.readFileSync(
+        path.join(
+          appRootPath.toString(),
+          `/src/template/x-input/${form_id}.json`
+        ),
+        "utf-8"
+      );
       const schema = convertToJoiSchema(JSON.parse(validationRules));
       const { error, value } = schema.validate(data);
-      if(error != undefined){
-        res.status(httpStatus.OK).send({error: error.details[0].message});
-        return;
+      if (error != undefined) {
+        return res.status(httpStatus.OK).send({ error: error.details[0].message });
       }
-   
- 
-      res.status(httpStatus.OK).send(value);
+
+      const result = await this.xInputService.xInput(value);
+      return res.status(httpStatus.OK).send(result);
     } catch (error) {
-      res.status(httpStatus.SERVICE_UNAVAILABLE).send();
-      return undefined;
+      return res.status(httpStatus.SERVICE_UNAVAILABLE).send();
     }
   }
 }

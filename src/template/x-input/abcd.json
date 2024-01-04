@@ -1,0 +1,14 @@
+{
+  "name": {
+    "type": "string",
+    "required": true
+  },
+  "number_of_items": {
+    "type": "number",
+    "required": true
+  },
+  "form_id": {
+    "type": "string",
+    "required": true
+  }
+}
