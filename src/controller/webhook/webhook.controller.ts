@@ -10,6 +10,7 @@ import axiosInstance from "axios";
 import https from 'https'
 import config from "../../config";
 import { TLService } from '../../tl/tl.service';
+import { AppLogger } from '../../app/app.logger';
 
 @controller('/')
 export class WebhookController implements interfaces.Controller {
@@ -56,8 +57,10 @@ export class WebhookController implements interfaces.Controller {
                     break;
             }
             let transformedData = {};
-            transformedData = await this.tLService.transform(result, responseAction);
-            await this.webhookCall(transformedData, responseAction);
+            if (responseAction) {
+                transformedData = await this.tLService.transform(result, responseAction);
+                await this.webhookCall(transformedData, responseAction);
+            }
             // return transformedData;
         } catch (error) {
             throw error;
@@ -65,14 +68,21 @@ export class WebhookController implements interfaces.Controller {
     }
 
     private async webhookCall(data: any, action: string): Promise<any> {
-        const axios = axiosInstance.create({
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: false,
-            }),
-        });
-        const bppHeaders = {
-            "Content-Type": "application/json",
-        };
-        await axios.post(`${config.PROTOCOL_SERVER_URL}/${action}`, data, { headers: bppHeaders });
+        const url = `${config.PROTOCOL_SERVER_URL}/${action}`;
+        try {
+            const axios = axiosInstance.create({
+                httpsAgent: new https.Agent({
+                    rejectUnauthorized: false,
+                }),
+            });
+            const bppHeaders = {
+                "Content-Type": "application/json",
+            };
+            await axios.post(url, data, { headers: bppHeaders });
+        } catch (error) {
+            const appLogger = new AppLogger();
+            appLogger.error("Error in pushing to webhook", { url, data, action });
+            return {};
+        }
     }
 }

@@ -11,7 +11,7 @@ import { DOMAIN } from "../../constants";
 
 @injectable()
 export class SearchService {
-  constructor() {}
+  constructor() { }
 
   async search(filter: any) {
     try {
@@ -253,21 +253,21 @@ export class SearchService {
                 //Add categories for provider if exists
                 ...(e?.category_ids?.data && e.category_ids.data.length > 0
                   ? {
-                      categories: e.category_ids.data
-                        .map((cat: any) => {
-                          // Check if attributes.value exists
-                          return cat.attributes && cat.attributes.value
-                            ? {
-                                id: cat.id,
-                                descriptor: {
-                                  code: cat.attributes.category_code,
-                                  name: cat.attributes.value,
-                                },
-                              }
-                            : null; // Return null for categories with missing attributes.value
-                        })
-                        .filter(Boolean), // Remove null values from the array
-                    }
+                    categories: e.category_ids.data
+                      .map((cat: any) => {
+                        // Check if attributes.value exists
+                        return cat.attributes && cat.attributes.value
+                          ? {
+                            id: cat.id,
+                            descriptor: {
+                              code: cat.attributes.category_code,
+                              name: cat.attributes.value,
+                            },
+                          }
+                          : null; // Return null for categories with missing attributes.value
+                      })
+                      .filter(Boolean), // Remove null values from the array
+                  }
                   : {}),
 
                 items: e.items.map((item: any) => {
@@ -288,19 +288,19 @@ export class SearchService {
                         : "",
                       //check if images exist for item if so then add
                       ...(item?.attributes?.image?.data &&
-                      item?.attributes?.image.data.length > 0
+                        item?.attributes?.image.data.length > 0
                         ? {
-                            images: item.attributes.image.data
-                              .map((img: any) => {
-                                // Check if attributes.value exists
-                                return img.attributes && img.attributes.url
-                                  ? {
-                                      url: img.attributes.url,
-                                    }
-                                  : null; // Return null for categories with missing attributes.value
-                              })
-                              .filter(Boolean), // Remove null values from the array
-                          }
+                          images: item.attributes.image.data
+                            .map((img: any) => {
+                              // Check if attributes.value exists
+                              return img.attributes && img.attributes.url
+                                ? {
+                                  url: img.attributes.url,
+                                }
+                                : null; // Return null for categories with missing attributes.value
+                            })
+                            .filter(Boolean), // Remove null values from the array
+                        }
                         : {}),
                     },
                     rateable: true,
@@ -356,10 +356,11 @@ export class SearchService {
           return values.some((value: any) => name.includes(value.toLowerCase()));
         }
         const requestPayloadItem =
-          filter?.message?.intent?.item?.descriptor?.name?filter?.message?.intent?.item?.descriptor?.name?.split(",").filter(Boolean):filter?.message?.intent?.category?.descriptor?.name?.split(",").filter(Boolean)
-           
+          filter?.message?.intent?.item?.descriptor?.name ? filter?.message?.intent?.item?.descriptor?.name?.split(",").filter(Boolean) : filter?.message?.intent?.category?.descriptor?.name?.split(",").filter(Boolean)
+
         // Use the filter method to filter the items based on the request payload.This happens when provider lists all the items under them
         const filteredItems = providers.reduce((result: any, obj: any) => {
+          console.log('abhi1', obj.attributes.items.data);
           const filteredData = obj.attributes.items.data.filter((item: any) =>
             containsValue(item, requestPayloadItem)
           );
@@ -570,54 +571,54 @@ export class SearchService {
                   //Add categories for provider if exists
                   ...(e?.category_ids?.data && e.category_ids.data.length > 0
                     ? {
-                        categories: e.category_ids.data
-                          .map((cat: any) => {
-                            // Check if attributes.value exists
-                            return cat.attributes && cat.attributes.value
-                              ? {
-                                  id: cat.id,
-                                  descriptor: {
-                                    name: cat.attributes.value,
-                                  },
-                                }
-                              : null; // Return null for categories with missing attributes.value
-                          })
-                          .filter(Boolean), // Remove null values from the array
-                      }
+                      categories: e.category_ids.data
+                        .map((cat: any) => {
+                          // Check if attributes.value exists
+                          return cat.attributes && cat.attributes.value
+                            ? {
+                              id: cat.id,
+                              descriptor: {
+                                name: cat.attributes.value,
+                              },
+                            }
+                            : null; // Return null for categories with missing attributes.value
+                        })
+                        .filter(Boolean), // Remove null values from the array
+                    }
                     : {}),
 
                   //Add locations for provider if exist
                   ...(e.location_id && e.location_id.data
                     ? {
-                        locations: [
-                          {
-                            id: e?.location_id?.data?.id
-                              ? e?.location_id?.data?.id
-                              : "",
-                            address: e?.location_id?.data?.attributes?.address
-                              ? e?.location_id?.data?.attributes?.address
-                              : "",
-                            city: {
-                              name: e?.location_id?.data?.attributes?.city
-                                ? e?.location_id?.data?.attributes?.city
-                                : "",
-                            },
-                            country: {
-                              name: e?.location_id?.data?.attributes?.country
-                                ? e?.location_id?.data?.attributes?.country
-                                : "",
-                            },
-                            state: {
-                              name: e?.location_id?.data?.attributes?.state
-                                ? e?.location_id?.data?.attributes?.state
-                                : "",
-                            },
-                            area_code: e?.location_id?.data?.attributes?.zip
-                              ? e?.location_id?.data?.attributes?.zip.toString()
+                      locations: [
+                        {
+                          id: e?.location_id?.data?.id
+                            ? e?.location_id?.data?.id
+                            : "",
+                          address: e?.location_id?.data?.attributes?.address
+                            ? e?.location_id?.data?.attributes?.address
+                            : "",
+                          city: {
+                            name: e?.location_id?.data?.attributes?.city
+                              ? e?.location_id?.data?.attributes?.city
                               : "",
                           },
-                        ],
-                      }
+                          country: {
+                            name: e?.location_id?.data?.attributes?.country
+                              ? e?.location_id?.data?.attributes?.country
+                              : "",
+                          },
+                          state: {
+                            name: e?.location_id?.data?.attributes?.state
+                              ? e?.location_id?.data?.attributes?.state
+                              : "",
+                          },
+                          area_code: e?.location_id?.data?.attributes?.zip
+                            ? e?.location_id?.data?.attributes?.zip.toString()
+                            : "",
+                        },
+                      ],
+                    }
                     : {}),
                   fulfillments: [
                     {
@@ -663,30 +664,30 @@ export class SearchService {
                           : "",
                         //check if images exist for item if so then add
                         ...(item?.attributes?.image?.data &&
-                        item?.attributes?.image.data.length > 0
+                          item?.attributes?.image.data.length > 0
                           ? {
-                              images: item.attributes.image.data
-                                .map((img: any) => {
-                                  // Check if attributes.value exists
-                                  return img.attributes && img.attributes.url
-                                    ? {
-                                        url: img.attributes.url,
-                                      }
-                                    : null; // Return null for categories with missing attributes.value
-                                })
-                                .filter(Boolean), // Remove null values from the array
-                            }
+                            images: item.attributes.image.data
+                              .map((img: any) => {
+                                // Check if attributes.value exists
+                                return img.attributes && img.attributes.url
+                                  ? {
+                                    url: img.attributes.url,
+                                  }
+                                  : null; // Return null for categories with missing attributes.value
+                              })
+                              .filter(Boolean), // Remove null values from the array
+                          }
                           : {}),
                       },
                       rateable: true,
                       ...(e.location_id && e.location_id.data
                         ? {
-                            location_ids: [
-                              e?.location_id?.data?.id
-                                ? e?.location_id?.data?.id
-                                : "",
-                            ],
-                          }
+                          location_ids: [
+                            e?.location_id?.data?.id
+                              ? e?.location_id?.data?.id
+                              : "",
+                          ],
+                        }
                         : {}),
                       price: {
                         value: item?.attributes?.sc_retail_product?.data
@@ -696,7 +697,7 @@ export class SearchService {
                         currency: item?.attributes?.sc_retail_product?.data
                           ?.attributes?.currency
                           ? item?.attributes?.sc_retail_product?.data
-                              ?.attributes?.currency
+                            ?.attributes?.currency
                           : "INR",
                       },
                       quantity: {
@@ -704,7 +705,7 @@ export class SearchService {
                           count: item?.attributes?.sc_retail_product?.data
                             ?.attributes?.stock_quantity
                             ? item?.attributes?.sc_retail_product?.data
-                                ?.attributes?.stock_quantity
+                              ?.attributes?.stock_quantity
                             : 0,
                         },
                       },
@@ -719,7 +720,7 @@ export class SearchService {
                             description: tag?.attributes?.tag_group_id?.data
                               ?.attributes?.tag_group_name
                               ? tag?.attributes?.tag_group_id?.data?.attributes
-                                  ?.tag_group_name
+                                ?.tag_group_name
                               : "",
                           },
                           list: [
@@ -874,7 +875,7 @@ export class SearchService {
         queryTable
       );
       return result;
-    } else if (filter.item){
+    } else if (filter.item) {
       const result = await this.itemFilter(
         filter,
         domainFilterQuery,
@@ -1028,19 +1029,17 @@ export class SearchService {
         {
           taxanomy: { contains:"CAT" } 
           taxanomy_id:{ in: [${catIds
-            .map((str: string) => `"${str.trim()}"`)
-            .join(",")}] }
+        .map((str: string) => `"${str.trim()}"`)
+        .join(",")}] }
           and: [
-            ${
-              filter.item
-                ? "{" + this.generateItemFilterQuery(filter.item) + "},"
-                : ""
-            }
-            ${
-              filter.provider
-                ? "{" + this.generateProviderFilterQuery(filter.provider) + "},"
-                : ""
-            }
+            ${filter.item
+        ? "{" + this.generateItemFilterQuery(filter.item) + "},"
+        : ""
+      }
+            ${filter.provider
+        ? "{" + this.generateProviderFilterQuery(filter.provider) + "},"
+        : ""
+      }
             {${domainFilterQuery}}
           ]
         }
