@@ -353,15 +353,11 @@ export class SearchService {
         const providers = result.data.providers.data;
         function containsValue(item: any, values: any) {
           const name = item.attributes.name.toLowerCase();
-          return values.some((value: any) =>
-            name.includes(value.toLowerCase())
-          );
+          return values.some((value: any) => name.includes(value.toLowerCase()));
         }
-        // const requestPayloadItem = filter.message.intent.item.descriptor.name?filter.message.intent.item.descriptor.name:filter.message.intent.category.descriptor.name
         const requestPayloadItem =
-          filter.message.intent.category.descriptor.name
-            .split(",")
-            .filter(Boolean);
+          filter?.message?.intent?.item?.descriptor?.name?filter?.message?.intent?.item?.descriptor?.name?.split(",").filter(Boolean):filter?.message?.intent?.category?.descriptor?.name?.split(",").filter(Boolean)
+           
         // Use the filter method to filter the items based on the request payload.This happens when provider lists all the items under them
         const filteredItems = providers.reduce((result: any, obj: any) => {
           const filteredData = obj.attributes.items.data.filter((item: any) =>
@@ -878,9 +874,9 @@ export class SearchService {
         queryTable
       );
       return result;
-    } else {
+    } else if (filter.item){
       const result = await this.itemFilter(
-        filter.message.intent,
+        filter,
         domainFilterQuery,
         queryFields,
         queryTable
@@ -907,9 +903,7 @@ export class SearchService {
       )
       ${fields}
     }`;
-
     const response = await makeGraphQLRequest(query);
-
     return response;
   }
   private async categoryFilter(
@@ -939,7 +933,6 @@ export class SearchService {
       )
       ${fields}
     }`;
-    console.log("QUERY::",query)
     const response = await makeGraphQLRequest(query);
     return response;
   }
