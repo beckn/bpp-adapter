@@ -353,14 +353,13 @@ export class SearchService {
         const providers = result.data.providers.data;
         function containsValue(item: any, values: any) {
           const name = item.attributes.name.toLowerCase();
-          return values.some((value: any) => name.includes(value.toLowerCase()));
+          return values?.some((value: any) => name.includes(value.toLowerCase()));
         }
         const requestPayloadItem =
           filter?.message?.intent?.item?.descriptor?.name ? filter?.message?.intent?.item?.descriptor?.name?.split(",").filter(Boolean) : filter?.message?.intent?.category?.descriptor?.name?.split(",").filter(Boolean)
 
         // Use the filter method to filter the items based on the request payload.This happens when provider lists all the items under them
         const filteredItems = providers.reduce((result: any, obj: any) => {
-          console.log('abhi1', obj.attributes.items.data);
           const filteredData = obj.attributes.items.data.filter((item: any) =>
             containsValue(item, requestPayloadItem)
           );
@@ -538,6 +537,10 @@ export class SearchService {
             })),
           })
         );
+
+        if (!providersWithTagsAndCat?.length) {
+          return;
+        }
 
         return {
           context: filter.context,

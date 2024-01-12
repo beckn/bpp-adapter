@@ -29,11 +29,11 @@ export class WebhookController implements interfaces.Controller {
         try {
             let responseAction = "";
             const { action } = body.context || {};
-            let result = {};
+            let result;
             switch (action) {
                 case "search":
-                    responseAction = "on_search";
                     result = await this.searchService.search(body);
+                    responseAction = "on_search";
                     break;
 
                 case "select":
@@ -57,7 +57,7 @@ export class WebhookController implements interfaces.Controller {
                     break;
             }
             let transformedData = {};
-            if (responseAction) {
+            if (responseAction && result) {
                 transformedData = await this.tLService.transform(result, responseAction);
                 await this.webhookCall(transformedData, responseAction);
             }
@@ -82,7 +82,6 @@ export class WebhookController implements interfaces.Controller {
         } catch (error) {
             const appLogger = new AppLogger();
             appLogger.error("Error in pushing to webhook", { url, data, action });
-            return {};
         }
     }
 }
