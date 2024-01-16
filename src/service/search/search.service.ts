@@ -603,6 +603,9 @@ export class SearchService {
                           id: e?.location_id?.data?.id
                             ? e?.location_id?.data?.id
                             : "",
+                            gps:e?.location_id?.data?.attributes?.gps
+                            ? e?.location_id?.data?.attributes?.gps.toString()
+                            : "",
                           address: e?.location_id?.data?.attributes?.address
                             ? e?.location_id?.data?.attributes?.address
                             : "",
@@ -610,9 +613,7 @@ export class SearchService {
                             name: e?.location_id?.data?.attributes?.city
                               ? e?.location_id?.data?.attributes?.city
                               : "",
-                              gps:e?.location_id?.data?.attributes?.gps
-                              ? e?.location_id?.data?.attributes?.gps.toString()
-                              : "",
+                             
                           },
                           country: {
                             name: e?.location_id?.data?.attributes?.country
