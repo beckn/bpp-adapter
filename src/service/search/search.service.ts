@@ -219,7 +219,7 @@ export class SearchService {
             })),
           })
         );
-
+         
         return {
           context: filter.context,
           message: {
@@ -370,6 +370,7 @@ export class SearchService {
               short_desc: obj.attributes.short_desc,
               long_desc: obj.attributes.long_desc,
               provider_uri: obj.attributes.provider_uri,
+              provider_rating: obj.attributes.provider_rating,
               category_ids: obj.attributes.category_ids,
               domain_id: obj.attributes.category_ids,
               location_id: obj.attributes.location_id,
@@ -564,6 +565,9 @@ export class SearchService {
                         url: e?.logo?.data?.attributes?.url
                           ? e?.logo?.data?.attributes?.url
                           : "http://abc.com/image.jpg",
+                          size_type: e?.logo?.data?.attributes?.size_type
+                          ? e?.logo?.data?.attributes?.size_type
+                          : "sm",
                       },
                     ],
                   },
@@ -585,7 +589,8 @@ export class SearchService {
                           .filter(Boolean), // Remove null values from the array
                       }
                     : {}),
-
+                  rating:e?.provider_rating ? e?.provider_rating : "",
+                  short_desc: e?.short_desc ? e?.short_desc : "",
                   //Add locations for provider if exist
                   ...(e.location_id && e.location_id.data
                     ? {
@@ -614,6 +619,9 @@ export class SearchService {
                             },
                             area_code: e?.location_id?.data?.attributes?.zip
                               ? e?.location_id?.data?.attributes?.zip.toString()
+                              : "",
+                              gps:e?.location_id?.data?.attributes?.gps
+                              ? e?.location_id?.data?.attributes?.gps.toString()
                               : "",
                           },
                         ],
@@ -903,6 +911,7 @@ export class SearchService {
       )
       ${fields}
     }`;
+  
     const response = await makeGraphQLRequest(query);
     return response;
   }

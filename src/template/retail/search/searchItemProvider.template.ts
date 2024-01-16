@@ -6,6 +6,7 @@ export const queryFields = `{
       short_desc
       long_desc
       provider_uri
+      provider_rating
       category_ids
       {
         data
@@ -35,6 +36,7 @@ export const queryFields = `{
             state
             country
             zip
+            gps
           }
         }
       }
@@ -42,7 +44,8 @@ export const queryFields = `{
         data {
           id
           attributes {
-            url
+            url,
+            size_type
           }
         }
       }
