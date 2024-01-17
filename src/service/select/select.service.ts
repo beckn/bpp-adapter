@@ -308,6 +308,19 @@ export class SelectService {
             context: filter.context,
             message: {
               order: {
+                quote: {
+                  price: {
+                    value: res?.attributes?.sc_retail_product?.data?.attributes
+                      ?.min_price
+                      ? res?.attributes?.sc_retail_product?.data?.attributes?.min_price.toString()
+                      : "0",
+                    currency: res?.attributes?.sc_retail_product?.data
+                      ?.attributes?.currency
+                      ? res?.attributes?.sc_retail_product?.data?.attributes
+                        ?.currency
+                      : "INR",
+                  }
+                },
                 provider: {
                   id: res?.attributes?.provider?.data?.id,
                   descriptor: {
