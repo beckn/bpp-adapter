@@ -4,8 +4,6 @@ import { retailQueryFields } from "../../template/retail/select/selectItem.templ
 import { retailQueryTable } from "../../template/retail/select/selectItem.template";
 import { serviceQueryFields } from "../../template/service/select/selectItem.template";
 import { serviceQueryTable } from "../../template/service/select/selectItem.template";
-import { fulfillments_scholarship } from "../../template/fulfillment/fulfillment_scholarship";
-import { fulfillments_jobs } from "../../template/fulfillment/fulfillment_jobs";
 import config from "../../config";
 import { DOMAIN } from "../../constants";
 
@@ -229,7 +227,6 @@ export class SelectService {
           );
 
           const res = result.items.data[0];
-
           const filteredData: any =
             res.attributes.cat_attr_tag_relations.data.filter(
               (item: { attributes: { taxanomy: string } }) =>
@@ -308,19 +305,7 @@ export class SelectService {
             context: filter.context,
             message: {
               order: {
-                quote: {
-                  price: {
-                    value: res?.attributes?.sc_retail_product?.data?.attributes
-                      ?.min_price
-                      ? res?.attributes?.sc_retail_product?.data?.attributes?.min_price.toString()
-                      : "0",
-                    currency: res?.attributes?.sc_retail_product?.data
-                      ?.attributes?.currency
-                      ? res?.attributes?.sc_retail_product?.data?.attributes
-                        ?.currency
-                      : "INR",
-                  }
-                },
+               
                 provider: {
                   id: res?.attributes?.provider?.data?.id,
                   descriptor: {
@@ -349,15 +334,21 @@ export class SelectService {
                           ?.url
                           ? res?.attributes?.provider?.logo?.data?.attributes?.url
                           : "http://abc.com/image.jpg",
+                          size_type:res?.attributes?.provider?.logo?.data?.attributes
+                          ?.size_type
+                          ? res?.attributes?.provider?.logo?.data?.attributes?.size_type
+                          : "sm",
                       },
                     ],
                   },
-                  fullfillments:
-                    filter.context.domain === "dsep:jobs"
-                      ? fulfillments_jobs
-                      : filter.context.domain === "dsep:scholarships"
-                        ? fulfillments_scholarship
-                        : "",
+                  fullfillments:res?.attributes?.provider?.data?.attributes?.fulfillments?.data.map((ful:any)=>{
+                   return {id:ful.id,
+                  type:ful?.attributes?.type?ful?.attributes?.type : "HOME-DELIVERY",
+                rateable:ful?.attributes?.rateable?ful?.attributes?.rateable:"",
+              rating:ful?.attributes?.rating?ful?.attributes?.rating:""}
+
+                  })
+                    ,
                   //Add if location exists
                   ...(res.attributes.provider.data.attributes.location_id &&
                     res.attributes.provider.data.attributes.location_id.data
@@ -428,9 +419,15 @@ export class SelectService {
                   {
                     id: res.id,
                     descriptor: {
-                      name: res.attributes.name,
-                      long_desc: res.attributes.long_desc,
-                      short_desc: res.attributes.short_desc,
+                      name: res?.attributes?.name?res?.attributes?.name:"",
+                      long_desc: res.attributes.long_desc?res.attributes.long_desc:"",
+                      short_desc: res.attributes.short_desc?res.attributes.short_desc:"",
+                      images: [
+                        {
+                            url: res?.attributes?.image?.url?res?.attributes?.image?.url:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJQbANiJKOddLqjBqk3Y-bws-pUxisbxvhrw&usqp=CAU",
+                            size_type: res?.attributes?.image?.size_type?res?.attributes?.image?.size_type:"sm"
+                        }
+                    ]
                     },
                     //Add category ids if exists
                     ...(category?.data?.categories?.data &&
@@ -454,12 +451,8 @@ export class SelectService {
                         ],
                       }
                       : {}),
-                    fulfillment_ids:
-                      filter.context.domain === "dsep:jobs"
-                        ? fulfillments_jobs.map((ful: any) => ful.id)
-                        : filter.context.domain === "dsep:scholarships"
-                          ? fulfillments_scholarship.map((ful: any) => ful.id)
-                          : [],
+                    fulfillment_ids:[res.attributes.item_fulfillment_id.data.id],
+                      
                     xinput: {
                       required: true,
                       form: {
@@ -498,7 +491,7 @@ export class SelectService {
                               ? {
                                 display: true,
                                 descriptor: {
-                                  description: tg?.attributes?.tag_name
+                                  name: tg?.attributes?.tag_name
                                     ? tg?.attributes?.tag_name
                                     : "",
                                 },
@@ -520,6 +513,48 @@ export class SelectService {
                       : {}),
                   },
                 ],
+                fulfillments:[
+                  {
+                    id:res.attributes.item_fulfillment_id.data.id,
+                    stops: [
+                      {
+                          type: "end",
+                          location: {
+                              gps: res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.gps?res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.gps:"",
+                              area_code: res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.zip?res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.zip.toString():""
+                          }
+                      }
+                  ]
+                
+                  }
+                ],
+                quote:
+                {
+                  price: {
+                    value: res?.attributes?.sc_retail_product?.data?.attributes
+                    ?.min_price
+                    ? res?.attributes?.sc_retail_product?.data?.attributes?.min_price.toString()
+                    : "0",
+                  currency: res?.attributes?.sc_retail_product?.data
+                    ?.attributes?.currency
+                    ? res?.attributes?.sc_retail_product?.data?.attributes
+                      ?.currency
+                    : "INR"
+                  },
+            
+                  breakup:res?.attributes?.sc_retail_product?.data?.attributes?.price_bareakup_ids?.data.map((item:any)=>{
+                    return{
+                      item:{
+                        id:item.attributes.item_id
+                      },
+                      title:item.attributes.title,
+                      price:{
+                        currency:item.attributes.currency,
+                        value:item.attributes.value
+                      }
+                    }
+                  })
+                }
               },
             },
           };
