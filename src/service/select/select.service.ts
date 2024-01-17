@@ -446,7 +446,7 @@ export class SelectService {
                         ? fulfillments_jobs.map((ful: any) => ful.id)
                         : filter.context.domain === "dsep:scholarships"
                           ? fulfillments_scholarship.map((ful: any) => ful.id)
-                          : "",
+                          : [],
                     xinput: {
                       required: true,
                       form: {
