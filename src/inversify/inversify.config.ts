@@ -12,11 +12,15 @@ import { InitService } from '../service/init/init.service';
 import { ConfirmService } from '../service/confirm/confirm.service';
 import { StatusService } from '../service/status/status.service';
 import { XInputService } from '../service/x-input/x-input.service';
+import { SupportService } from '../service/support/support.service';
+import { RatingService } from '../service/rating/rating.service';
+import { CancelService } from '../service/cancel/cancel.service';
+import {TrackService } from '../service/track/track.service';
+import { UpdateService } from '../service/update/update.service';
 
 
 const container = new Container();
 const server = new InversifyExpressServer(container);
-
 container.bind<TLService>(TLService).to(TLService);
 container.bind<AppLogger>(AppLogger).to(AppLogger);
 container.bind<HealthController>(HealthController).toSelf();
@@ -28,5 +32,10 @@ container.bind<InitService>(InitService).to(InitService);
 container.bind<ConfirmService>(ConfirmService).to(ConfirmService);
 container.bind<StatusService>(StatusService).to(StatusService);
 container.bind<XInputService>(XInputService).to(XInputService);
+container.bind<SupportService>(SupportService).to(SupportService);
+container.bind<RatingService>(RatingService).to(RatingService);
+container.bind<CancelService>(CancelService).to(CancelService);
+container.bind<TrackService>(TrackService).to(TrackService);
+container.bind<UpdateService>(UpdateService).to(UpdateService);
 
 export { server, container };
