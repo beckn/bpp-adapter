@@ -132,7 +132,7 @@ export class InitService {
                     currency: quoteData.currency,
                   };
                 }
-              ),
+              )[0] || {},
             type: "PRE-ORDER",
           };
         });
