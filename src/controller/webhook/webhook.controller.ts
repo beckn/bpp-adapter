@@ -59,9 +59,9 @@ export class WebhookController implements interfaces.Controller {
             let transformedData = {};
             if (responseAction && result) {
                 transformedData = await this.tLService.transform(result, responseAction);
-                // await this.webhookCall(transformedData, responseAction);
+                await this.webhookCall(transformedData, responseAction);
             }
-            return transformedData;
+            // return transformedData;
         } catch (error) {
             throw error;
         }
@@ -70,6 +70,8 @@ export class WebhookController implements interfaces.Controller {
     private async webhookCall(data: any, action: string): Promise<any> {
         const url = `${config.PROTOCOL_SERVER_URL}/${action}`;
         try {
+            const appLogger = new AppLogger();
+            appLogger.debug("response sent to ", { action });
             const axios = axiosInstance.create({
                 httpsAgent: new https.Agent({
                     rejectUnauthorized: false,

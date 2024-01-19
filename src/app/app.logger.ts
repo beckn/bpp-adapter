@@ -20,6 +20,7 @@ export class AppLogger {
                 }),
                 new winston.transports.File({ filename: 'logs/error.log', level: 'error', format: format.combine(format.colorize(), format.json()) }),
                 new winston.transports.File({ filename: 'logs/combined.log', format: format.combine(format.colorize(), format.json()) }),
+                new winston.transports.File({ filename: 'logs/debug.log', level: 'debug', format: format.combine(format.colorize(), format.json()) }),
             ],
             exitOnError: false
         });
@@ -31,6 +32,10 @@ export class AppLogger {
 
     public error(message: string, ...args: any[]): void {
         this.logger.error(this.formatMessage(message, args));
+    }
+
+    public debug(message: string, ...args: any[]): void {
+        this.logger.debug(this.formatMessage(message, args));
     }
 
     private formatMessage(message: string, args: any[]): string {
