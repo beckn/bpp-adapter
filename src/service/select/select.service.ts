@@ -9,7 +9,7 @@ import { DOMAIN } from "../../constants";
 
 @injectable()
 export class SelectService {
-  constructor() { }
+  constructor() {}
 
   async select(filter: any) {
     try {
@@ -83,7 +83,9 @@ export class SelectService {
       }
     }
   }`;
-        const response = await makeGraphQLRequest(query).then((res) => res.data);
+        const response = await makeGraphQLRequest(query).then(
+          (res) => res.data
+        );
         const res = response.items.data[0];
 
         const fetchCategory = filter.message.order.items[0].category_ids[0];
@@ -111,7 +113,8 @@ export class SelectService {
               provider: {
                 id: res?.attributes?.provider?.data?.id,
                 descriptor: {
-                  name: res?.attributes?.provider?.data?.attributes?.provider_name
+                  name: res?.attributes?.provider?.data?.attributes
+                    ?.provider_name
                     ? res?.attributes?.provider?.data?.attributes?.provider_name
                     : "",
                   short_desc: res?.attributes?.provider?.data?.attributes
@@ -123,25 +126,30 @@ export class SelectService {
                     ? res?.attributes?.provider?.data?.attributes?.long_desc
                     : "",
                   additional_desc: {
-                    url: res?.attributes?.provider?.data?.attributes?.provider_uri
-                      ? res?.attributes?.provider?.data?.attributes?.provider_uri
+                    url: res?.attributes?.provider?.data?.attributes
+                      ?.provider_uri
+                      ? res?.attributes?.provider?.data?.attributes
+                          ?.provider_uri
                       : "http://abc.com/image.jpg",
                   },
                   images: [
                     {
-                      url: res?.attributes?.provider?.logo?.data?.attributes?.url
+                      url: res?.attributes?.provider?.logo?.data?.attributes
+                        ?.url
                         ? res?.attributes?.provider?.logo?.data?.attributes?.url
                         : "http://abc.com/image.jpg",
                     },
                   ],
                 },
-                categories: [{
-                  id: catData.id,
-                  descriptor: {
-                    code: catData.attributes.category_code,
-                    name: catData.attributes.value,
+                categories: [
+                  {
+                    id: catData.id,
+                    descriptor: {
+                      code: catData.attributes.category_code,
+                      name: catData.attributes.value,
+                    },
                   },
-                }],
+                ],
               },
               items: [
                 {
@@ -171,37 +179,37 @@ export class SelectService {
                   currency: res?.attributes?.sc_retail_product?.data?.attributes
                     ?.currency
                     ? res?.attributes?.sc_retail_product?.data?.attributes
-                      ?.currency
+                        ?.currency
                     : "INR",
                 },
                 breakup: [
                   {
                     title: "Base fee",
                     price: {
-                      value: res?.attributes?.sc_retail_product?.data?.attributes
-                        ?.base_fee
+                      value: res?.attributes?.sc_retail_product?.data
+                        ?.attributes?.base_fee
                         ? res?.attributes?.sc_retail_product?.data?.attributes
-                          ?.base_fee
+                            ?.base_fee
                         : "0",
                       currency: res?.attributes?.sc_retail_product?.data
                         ?.attributes?.currency
                         ? res?.attributes?.sc_retail_product?.data?.attributes
-                          ?.currency
+                            ?.currency
                         : "INR",
                     },
                   },
                   {
                     title: "Fee per hearing",
                     price: {
-                      value: res?.attributes?.sc_retail_product?.data?.attributes
-                        ?.additional_fee
+                      value: res?.attributes?.sc_retail_product?.data
+                        ?.attributes?.additional_fee
                         ? res?.attributes?.sc_retail_product?.data?.attributes
-                          ?.additional_fee
+                            ?.additional_fee
                         : "0",
                       currency: res?.attributes?.sc_retail_product?.data
                         ?.attributes?.currency
                         ? res?.attributes?.sc_retail_product?.data?.attributes
-                          ?.currency
+                            ?.currency
                         : "INR",
                     },
                   },
@@ -305,13 +313,13 @@ export class SelectService {
             context: filter.context,
             message: {
               order: {
-               
                 provider: {
                   id: res?.attributes?.provider?.data?.id,
                   descriptor: {
                     name: res?.attributes?.provider?.data?.attributes
                       ?.provider_name
-                      ? res?.attributes?.provider?.data?.attributes?.provider_name
+                      ? res?.attributes?.provider?.data?.attributes
+                          ?.provider_name
                       : "",
                     short_desc: res?.attributes?.provider?.data?.attributes
                       ?.short_desc
@@ -325,150 +333,170 @@ export class SelectService {
                       url: res?.attributes?.provider?.data?.attributes
                         ?.provider_uri
                         ? res?.attributes?.provider?.data?.attributes
-                          ?.provider_uri
+                            ?.provider_uri
                         : "http://abc.com/image.jpg",
                     },
                     images: [
                       {
                         url: res?.attributes?.provider?.logo?.data?.attributes
                           ?.url
-                          ? res?.attributes?.provider?.logo?.data?.attributes?.url
+                          ? res?.attributes?.provider?.logo?.data?.attributes
+                              ?.url
                           : "http://abc.com/image.jpg",
-                          size_type:res?.attributes?.provider?.logo?.data?.attributes
-                          ?.size_type
-                          ? res?.attributes?.provider?.logo?.data?.attributes?.size_type
+                        size_type: res?.attributes?.provider?.logo?.data
+                          ?.attributes?.size_type
+                          ? res?.attributes?.provider?.logo?.data?.attributes
+                              ?.size_type
                           : "sm",
                       },
                     ],
                   },
-                  fullfillments:res?.attributes?.provider?.data?.attributes?.fulfillments?.data.map((ful:any)=>{
-                   return {id:ful.id,
-                  type:ful?.attributes?.type?ful?.attributes?.type : "HOME-DELIVERY",
-                rateable:ful?.attributes?.rateable?ful?.attributes?.rateable:"",
-              rating:ful?.attributes?.rating?ful?.attributes?.rating:""}
-
-                  })
-                    ,
+                  fullfillments:
+                    res?.attributes?.provider?.data?.attributes?.fulfillments?.data.map(
+                      (ful: any) => {
+                        return {
+                          id: ful.id,
+                          type: ful?.attributes?.type
+                            ? ful?.attributes?.type
+                            : "HOME-DELIVERY",
+                          rateable: ful?.attributes?.rateable
+                            ? ful?.attributes?.rateable
+                            : "",
+                          rating: ful?.attributes?.rating
+                            ? ful?.attributes?.rating
+                            : "",
+                        };
+                      }
+                    ),
                   //Add if location exists
                   ...(res.attributes.provider.data.attributes.location_id &&
-                    res.attributes.provider.data.attributes.location_id.data
+                  res.attributes.provider.data.attributes.location_id.data
                     ? {
-                      locations: [
-                        {
-                          id: res?.attributes?.provider?.data?.attributes
-                            ?.location_id?.data?.id
-                            ? res?.attributes?.provider?.data?.attributes
+                        locations: [
+                          {
+                            id: res?.attributes?.provider?.data?.attributes
                               ?.location_id?.data?.id
-                            : "",
-                          address: res?.attributes?.provider?.data?.attributes
-                            ?.location_id?.data?.attributes?.address
-                            ? res?.attributes?.provider?.data?.attributes
+                              ? res?.attributes?.provider?.data?.attributes
+                                  ?.location_id?.data?.id
+                              : "",
+                            address: res?.attributes?.provider?.data?.attributes
                               ?.location_id?.data?.attributes?.address
-                            : "",
-                          city: {
-                            name: res?.attributes?.provider?.data?.attributes
-                              ?.location_id?.data?.attributes?.city
                               ? res?.attributes?.provider?.data?.attributes
+                                  ?.location_id?.data?.attributes?.address
+                              : "",
+                            city: {
+                              name: res?.attributes?.provider?.data?.attributes
                                 ?.location_id?.data?.attributes?.city
-                              : "",
-                          },
-                          country: {
-                            name: res?.attributes?.provider?.data?.attributes
-                              ?.location_id?.data?.attributes?.country
-                              ? res?.attributes?.provider?.data?.attributes
+                                ? res?.attributes?.provider?.data?.attributes
+                                    ?.location_id?.data?.attributes?.city
+                                : "",
+                            },
+                            country: {
+                              name: res?.attributes?.provider?.data?.attributes
                                 ?.location_id?.data?.attributes?.country
-                              : "",
-                          },
-                          state: {
-                            name: res?.attributes?.provider?.data?.attributes
-                              ?.location_id?.data?.attributes?.state
-                              ? res?.attributes?.provider?.data?.attributes
+                                ? res?.attributes?.provider?.data?.attributes
+                                    ?.location_id?.data?.attributes?.country
+                                : "",
+                            },
+                            state: {
+                              name: res?.attributes?.provider?.data?.attributes
                                 ?.location_id?.data?.attributes?.state
+                                ? res?.attributes?.provider?.data?.attributes
+                                    ?.location_id?.data?.attributes?.state
+                                : "",
+                            },
+                            area_code: res?.attributes?.provider?.data
+                              ?.attributes?.location_id?.data?.attributes?.zip
+                              ? res?.attributes?.provider?.data?.attributes?.location_id?.data?.attributes?.zip.toString()
                               : "",
                           },
-                          area_code: res?.attributes?.provider?.data?.attributes
-                            ?.location_id?.data?.attributes?.zip
-                            ? res?.attributes?.provider?.data?.attributes?.location_id?.data?.attributes?.zip.toString()
-                            : "",
-                        },
-                      ],
-                    }
+                        ],
+                      }
                     : {}),
 
                   //Add categories for provider if exists
                   ...(category?.data?.categories?.data &&
-                    category?.data?.categories?.data.length > 0
+                  category?.data?.categories?.data.length > 0
                     ? {
-                      categories: category.data.categories.data
-                        .map((cat: any) => {
-                          // Check if attributes.value exists
-                          return cat.attributes && cat.attributes.value
-                            ? {
-                              id: cat.id,
-                              descriptor: {
-                                name: cat.attributes.value,
-                              },
-                            }
-                            : null; // Return null for categories with missing attributes.value
-                        })
-                        .filter(Boolean), // Remove null values from the array
-                    }
+                        categories: category.data.categories.data
+                          .map((cat: any) => {
+                            // Check if attributes.value exists
+                            return cat.attributes && cat.attributes.value
+                              ? {
+                                  id: cat.id,
+                                  descriptor: {
+                                    name: cat.attributes.value,
+                                  },
+                                }
+                              : null; // Return null for categories with missing attributes.value
+                          })
+                          .filter(Boolean), // Remove null values from the array
+                      }
                     : {}),
                 },
                 items: [
                   {
                     id: res.id,
                     descriptor: {
-                      name: res?.attributes?.name?res?.attributes?.name:"",
-                      long_desc: res.attributes.long_desc?res.attributes.long_desc:"",
-                      short_desc: res.attributes.short_desc?res.attributes.short_desc:"",
+                      name: res?.attributes?.name ? res?.attributes?.name : "",
+                      long_desc: res.attributes.long_desc
+                        ? res.attributes.long_desc
+                        : "",
+                      short_desc: res.attributes.short_desc
+                        ? res.attributes.short_desc
+                        : "",
                       images: [
                         {
-                            url: res?.attributes?.image?.url?res?.attributes?.image?.url:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJQbANiJKOddLqjBqk3Y-bws-pUxisbxvhrw&usqp=CAU",
-                            size_type: res?.attributes?.image?.size_type?res?.attributes?.image?.size_type:"sm"
-                        }
-                    ]
+                          url: res?.attributes?.image?.url
+                            ? res?.attributes?.image?.url
+                            : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJQbANiJKOddLqjBqk3Y-bws-pUxisbxvhrw&usqp=CAU",
+                          size_type: res?.attributes?.image?.size_type
+                            ? res?.attributes?.image?.size_type
+                            : "sm",
+                        },
+                      ],
                     },
                     //Add category ids if exists
                     ...(category?.data?.categories?.data &&
-                      category?.data?.categories?.data.length > 0
+                    category?.data?.categories?.data.length > 0
                       ? {
-                        category_ids: category?.data?.categories?.data.map(
-                          (cat: any) => cat.id
-                        ),
-                      }
+                          category_ids: category?.data?.categories?.data.map(
+                            (cat: any) => cat.id
+                          ),
+                        }
                       : {}),
                     //Add location id if exists
                     ...(res.attributes.provider.data.attributes.location_id &&
-                      res.attributes.provider.data.attributes.location_id.data
+                    res.attributes.provider.data.attributes.location_id.data
                       ? {
-                        location_ids: [
-                          res?.attributes?.provider?.data?.attributes
-                            ?.location_id?.data?.id
-                            ? res?.attributes?.provider?.data?.attributes
+                          location_ids: [
+                            res?.attributes?.provider?.data?.attributes
                               ?.location_id?.data?.id
-                            : "",
-                        ],
-                      }
+                              ? res?.attributes?.provider?.data?.attributes
+                                  ?.location_id?.data?.id
+                              : "",
+                          ],
+                        }
                       : {}),
-                    fulfillment_ids:[res.attributes.item_fulfillment_id.data.id],
-                      
+                    fulfillment_ids: [
+                      res.attributes.item_fulfillment_id.data.id,
+                    ],
+
                     xinput: {
-                      required: true,
                       form: {
-                        url: "http://localhost:8001/public/getForm/a9aaecca-10b7-4d19-b640-022723112309/da0052a822dc4cdf95ab136b5614d0c9",
+                        url: `${config.ADAPTER_BASE_URL}/x-input/form?form_id=abcd`,
                         mime_type: "text/html",
                       },
                     },
                     price: {
-                      value: res?.attributes?.sc_retail_product?.data?.attributes
-                        ?.min_price
+                      value: res?.attributes?.sc_retail_product?.data
+                        ?.attributes?.min_price
                         ? res?.attributes?.sc_retail_product?.data?.attributes?.min_price.toString()
                         : "0",
                       currency: res?.attributes?.sc_retail_product?.data
                         ?.attributes?.currency
                         ? res?.attributes?.sc_retail_product?.data?.attributes
-                          ?.currency
+                            ?.currency
                         : "INR",
                     },
                     quantity: {
@@ -476,85 +504,94 @@ export class SelectService {
                         count: res?.attributes?.sc_retail_product?.data
                           ?.attributes?.stock_quantity
                           ? res?.attributes?.sc_retail_product?.data?.attributes
-                            ?.stock_quantity
+                              ?.stock_quantity
                           : 0,
                       },
                     },
                     //Add tags if exists
 
-                    ...(tag?.data?.tags?.data && tag?.data?.tags?.data.length > 0
+                    ...(tag?.data?.tags?.data &&
+                    tag?.data?.tags?.data.length > 0
                       ? {
-                        tags: tag.data.tags.data
-                          .map((tg: any) => {
-                            // Check if attributes.value exists
-                            return tg.attributes
-                              ? {
-                                display: true,
-                                descriptor: {
-                                  name: tg?.attributes?.tag_name
-                                    ? tg?.attributes?.tag_name
-                                    : "",
-                                },
-                                list: [
-                                  {
-                                    value: tg?.attributes?.tag_group_id?.data
-                                      ?.attributes?.tag_group_name
-                                      ? tg?.attributes?.tag_group_id?.data
-                                        ?.attributes?.tag_group_name
-                                      : "",
+                          tags: tag.data.tags.data
+                            .map((tg: any) => {
+                              // Check if attributes.value exists
+                              return tg.attributes
+                                ? {
                                     display: true,
-                                  },
-                                ],
-                              }
-                              : null; // Return null for categories with missing attributes.value
-                          })
-                          .filter(Boolean), // Remove null values from the array
-                      }
+                                    descriptor: {
+                                      name: tg?.attributes?.tag_name
+                                        ? tg?.attributes?.tag_name
+                                        : "",
+                                    },
+                                    list: [
+                                      {
+                                        value: tg?.attributes?.tag_group_id
+                                          ?.data?.attributes?.tag_group_name
+                                          ? tg?.attributes?.tag_group_id?.data
+                                              ?.attributes?.tag_group_name
+                                          : "",
+                                        display: true,
+                                      },
+                                    ],
+                                  }
+                                : null; // Return null for categories with missing attributes.value
+                            })
+                            .filter(Boolean), // Remove null values from the array
+                        }
                       : {}),
                   },
                 ],
-                fulfillments:[
+                fulfillments: [
                   {
-                    id:res.attributes.item_fulfillment_id.data.id,
+                    id: res.attributes.item_fulfillment_id.data.id,
                     stops: [
                       {
-                          type: "end",
-                          location: {
-                              gps: res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.gps?res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.gps:"",
-                              area_code: res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.zip?res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.zip.toString():""
-                          }
-                      }
-                  ]
-                
-                  }
+                        type: "end",
+                        location: {
+                          gps: res?.attributes.item_fulfillment_id?.data
+                            ?.attributes?.location_id?.data?.attributes?.gps
+                            ? res?.attributes.item_fulfillment_id?.data
+                                ?.attributes?.location_id?.data?.attributes?.gps
+                            : "",
+                          area_code: res?.attributes.item_fulfillment_id?.data
+                            ?.attributes?.location_id?.data?.attributes?.zip
+                            ? res?.attributes.item_fulfillment_id?.data?.attributes?.location_id?.data?.attributes?.zip.toString()
+                            : "",
+                        },
+                      },
+                    ],
+                  },
                 ],
-                quote:
-                {
+                quote: {
                   price: {
                     value: res?.attributes?.sc_retail_product?.data?.attributes
-                    ?.min_price
-                    ? res?.attributes?.sc_retail_product?.data?.attributes?.min_price.toString()
-                    : "0",
-                  currency: res?.attributes?.sc_retail_product?.data
-                    ?.attributes?.currency
-                    ? res?.attributes?.sc_retail_product?.data?.attributes
-                      ?.currency
-                    : "INR"
+                      ?.min_price
+                      ? res?.attributes?.sc_retail_product?.data?.attributes?.min_price.toString()
+                      : "0",
+                    currency: res?.attributes?.sc_retail_product?.data
+                      ?.attributes?.currency
+                      ? res?.attributes?.sc_retail_product?.data?.attributes
+                          ?.currency
+                      : "INR",
                   },
-            
-                  breakup:res?.attributes?.sc_retail_product?.data?.attributes?.price_bareakup_ids?.data.map((item:any)=>{
-                    return{
-                      item:{
-                        id:item.attributes.item_id
-                      },
-                      title:item.attributes.title,
-                      price:{
-                        currency:item.attributes.currency,
-                        value:item.attributes.value
+
+                  breakup:
+                    res?.attributes?.sc_retail_product?.data?.attributes?.price_bareakup_ids?.data.map(
+                      (item: any) => {
+                        return {
+                          item: {
+                            id: item.attributes.item_id,
+                          },
+                          title: item.attributes.title,
+                          price: {
+                            currency: item.attributes.currency,
+                            value: item.attributes.value,
+                          },
+                        };
                       }
-                    }
-                  })
-                }
+                    ),
+                },
               },
             },
           };
@@ -571,7 +608,7 @@ export class SelectService {
     } catch (error: any) {
       throw new Error(error.message);
     }
-  };
+  }
 
   private async selectItem(itemValue: any, fields: string, table: string) {
     const queryFilter = `filters:{id:{in:[${itemValue}]}}`;
@@ -583,7 +620,5 @@ export class SelectService {
         }`;
     const response = await makeGraphQLRequest(query).then((res) => res.data);
     return response;
-  };
+  }
 }
-
-

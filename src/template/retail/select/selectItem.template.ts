@@ -123,7 +123,7 @@ export const retailQueryFields = `    {
         data {
           id
           attributes {
-            state
+            
             location_id
             {
               data

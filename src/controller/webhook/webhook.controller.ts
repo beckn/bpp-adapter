@@ -59,9 +59,9 @@ export class WebhookController implements interfaces.Controller {
             let transformedData = {};
             if (responseAction && result) {
                 transformedData = await this.tLService.transform(result, responseAction);
-                await this.webhookCall(transformedData, responseAction);
+                // await this.webhookCall(transformedData, responseAction);
             }
-            // return transformedData;
+            return transformedData;
         } catch (error) {
             throw error;
         }
