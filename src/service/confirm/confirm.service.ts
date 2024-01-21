@@ -496,6 +496,8 @@ export class ConfirmService {
         return output;
       }
     } catch (error: any) {
+      const appLogger = new AppLogger();
+      appLogger.debug(error);
       throw new Error(error.message);
     }
   }
