@@ -479,7 +479,8 @@ export class SelectService {
                         }
                       : {}),
                     fulfillment_ids: [
-                      res.attributes.item_fulfillment_id.data.id,
+                      res.attributes.item_fulfillment_id.data.attributes
+                        .fulfilment_id.data.id,
                     ],
 
                     xinput: {

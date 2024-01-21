@@ -11,7 +11,7 @@ import { DOMAIN } from "../../constants";
 
 @injectable()
 export class SearchService {
-  constructor() { }
+  constructor() {}
 
   async search(filter: any) {
     try {
@@ -219,7 +219,7 @@ export class SearchService {
             })),
           })
         );
-         
+
         return {
           context: filter.context,
           message: {
@@ -253,21 +253,21 @@ export class SearchService {
                 //Add categories for provider if exists
                 ...(e?.category_ids?.data && e.category_ids.data.length > 0
                   ? {
-                    categories: e.category_ids.data
-                      .map((cat: any) => {
-                        // Check if attributes.value exists
-                        return cat.attributes && cat.attributes.value
-                          ? {
-                            id: cat.id,
-                            descriptor: {
-                              code: cat.attributes.category_code,
-                              name: cat.attributes.value,
-                            },
-                          }
-                          : null; // Return null for categories with missing attributes.value
-                      })
-                      .filter(Boolean), // Remove null values from the array
-                  }
+                      categories: e.category_ids.data
+                        .map((cat: any) => {
+                          // Check if attributes.value exists
+                          return cat.attributes && cat.attributes.value
+                            ? {
+                                id: cat.id,
+                                descriptor: {
+                                  code: cat.attributes.category_code,
+                                  name: cat.attributes.value,
+                                },
+                              }
+                            : null; // Return null for categories with missing attributes.value
+                        })
+                        .filter(Boolean), // Remove null values from the array
+                    }
                   : {}),
 
                 items: e.items.map((item: any) => {
@@ -288,19 +288,19 @@ export class SearchService {
                         : "",
                       //check if images exist for item if so then add
                       ...(item?.attributes?.image?.data &&
-                        item?.attributes?.image.data.length > 0
+                      item?.attributes?.image.data.length > 0
                         ? {
-                          images: item.attributes.image.data
-                            .map((img: any) => {
-                              // Check if attributes.value exists
-                              return img.attributes && img.attributes.url
-                                ? {
-                                  url: img.attributes.url,
-                                }
-                                : null; // Return null for categories with missing attributes.value
-                            })
-                            .filter(Boolean), // Remove null values from the array
-                        }
+                            images: item.attributes.image.data
+                              .map((img: any) => {
+                                // Check if attributes.value exists
+                                return img.attributes && img.attributes.url
+                                  ? {
+                                      url: img.attributes.url,
+                                    }
+                                  : null; // Return null for categories with missing attributes.value
+                              })
+                              .filter(Boolean), // Remove null values from the array
+                          }
                         : {}),
                     },
                     rateable: true,
@@ -353,10 +353,18 @@ export class SearchService {
         const providers = result.data.providers.data;
         function containsValue(item: any, values: any) {
           const name = item.attributes.name.toLowerCase();
-          return values?.some((value: any) => name.includes(value.toLowerCase()));
+          return values?.some((value: any) =>
+            name.includes(value.toLowerCase())
+          );
         }
-        const requestPayloadItem =
-          filter?.message?.intent?.item?.descriptor?.name ? filter?.message?.intent?.item?.descriptor?.name?.split(",").filter(Boolean) : filter?.message?.intent?.category?.descriptor?.name?.split(",").filter(Boolean)
+        const requestPayloadItem = filter?.message?.intent?.item?.descriptor
+          ?.name
+          ? filter?.message?.intent?.item?.descriptor?.name
+              ?.split(",")
+              .filter(Boolean)
+          : filter?.message?.intent?.category?.descriptor?.name
+              ?.split(",")
+              .filter(Boolean);
 
         // Use the filter method to filter the items based on the request payload.This happens when provider lists all the items under them
         const filteredItems = providers.reduce((result: any, obj: any) => {
@@ -376,6 +384,7 @@ export class SearchService {
               location_id: obj.attributes.location_id,
               logo: obj.attributes.logo,
               items: filteredData,
+              fulfillments: obj.attributes.fulfillments,
             });
           }
           return result;
@@ -569,7 +578,7 @@ export class SearchService {
                         url: e?.logo?.data?.attributes?.url
                           ? e?.logo?.data?.attributes?.url
                           : "http://abc.com/image.jpg",
-                          size_type: e?.logo?.data?.attributes?.size_type
+                        size_type: e?.logo?.data?.attributes?.size_type
                           ? e?.logo?.data?.attributes?.size_type
                           : "sm",
                       },
@@ -578,85 +587,71 @@ export class SearchService {
                   //Add categories for provider if exists
                   ...(e?.category_ids?.data && e.category_ids.data.length > 0
                     ? {
-                      categories: e.category_ids.data
-                        .map((cat: any) => {
-                          // Check if attributes.value exists
-                          return cat.attributes && cat.attributes.value
-                            ? {
-                              id: cat.id,
-                              descriptor: {
-                                name: cat.attributes.value,
-                              },
-                            }
-                            : null; // Return null for categories with missing attributes.value
-                        })
-                        .filter(Boolean), // Remove null values from the array
-                    }
+                        categories: e.category_ids.data
+                          .map((cat: any) => {
+                            // Check if attributes.value exists
+                            return cat.attributes && cat.attributes.value
+                              ? {
+                                  id: cat.id,
+                                  descriptor: {
+                                    name: cat.attributes.value,
+                                  },
+                                }
+                              : null; // Return null for categories with missing attributes.value
+                          })
+                          .filter(Boolean), // Remove null values from the array
+                      }
                     : {}),
-                  rating:e?.provider_rating ? e?.provider_rating : "",
+                  rating: e?.provider_rating ? e?.provider_rating : "",
                   short_desc: e?.short_desc ? e?.short_desc : "",
                   //Add locations for provider if exist
                   ...(e.location_id && e.location_id.data
                     ? {
-                      locations: [
-                        {
-                          id: e?.location_id?.data?.id
-                            ? e?.location_id?.data?.id
-                            : "",
-                            gps:e?.location_id?.data?.attributes?.gps
-                            ? e?.location_id?.data?.attributes?.gps.toString()
-                            : "",
-                          address: e?.location_id?.data?.attributes?.address
-                            ? e?.location_id?.data?.attributes?.address
-                            : "",
-                          city: {
-                            name: e?.location_id?.data?.attributes?.city
-                              ? e?.location_id?.data?.attributes?.city
+                        locations: [
+                          {
+                            id: e?.location_id?.data?.id
+                              ? e?.location_id?.data?.id
                               : "",
-                             
-                          },
-                          country: {
-                            name: e?.location_id?.data?.attributes?.country
-                              ? e?.location_id?.data?.attributes?.country
+                            gps: e?.location_id?.data?.attributes?.gps
+                              ? e?.location_id?.data?.attributes?.gps.toString()
+                              : "",
+                            address: e?.location_id?.data?.attributes?.address
+                              ? e?.location_id?.data?.attributes?.address
+                              : "",
+                            city: {
+                              name: e?.location_id?.data?.attributes?.city
+                                ? e?.location_id?.data?.attributes?.city
+                                : "",
+                            },
+                            country: {
+                              name: e?.location_id?.data?.attributes?.country
+                                ? e?.location_id?.data?.attributes?.country
+                                : "",
+                            },
+                            state: {
+                              name: e?.location_id?.data?.attributes?.state
+                                ? e?.location_id?.data?.attributes?.state
+                                : "",
+                            },
+                            area_code: e?.location_id?.data?.attributes?.zip
+                              ? e?.location_id?.data?.attributes?.zip.toString()
                               : "",
                           },
-                          state: {
-                            name: e?.location_id?.data?.attributes?.state
-                              ? e?.location_id?.data?.attributes?.state
-                              : "",
-                          },
-                          area_code: e?.location_id?.data?.attributes?.zip
-                            ? e?.location_id?.data?.attributes?.zip.toString()
-                            : "",
-                        },
-                      ],
-                    }
+                        ],
+                      }
                     : {}),
-                  fulfillments: [
-                    {
-                      id: "DSEP_FUL_58741444",
-                      type: "SCHOLARSHIP",
-                      tracking: false,
-                      contact: {
-                        phone: "9876543210",
-                        email: "maryg@xyz.com",
-                      },
-                      stops: [
-                        {
-                          type: "APPLICATION-START",
-                          time: {
-                            timestamp: "2023-01-01T00:00:00.000Z",
-                          },
-                        },
-                        {
-                          type: "APPLICATION-END",
-                          time: {
-                            timestamp: "2023-03-31T00:00:00.000Z",
-                          },
-                        },
-                      ],
-                    },
-                  ],
+                  fulfillments: e.fulfillments.data.map((data: any) => {
+                    return {
+                      id: data?.id,
+                      type: data.attributes.type,
+                      rating: data?.attributes?.rating.toString()
+                        ? data?.attributes?.rating.toString()
+                        : true,
+                      rateable: data?.attributes?.rateable
+                        ? data?.attributes?.rateable
+                        : true,
+                    };
+                  }),
                   rateable: true,
                   items: e.items.map((item: any) => {
                     return {
@@ -676,30 +671,30 @@ export class SearchService {
                           : "",
                         //check if images exist for item if so then add
                         ...(item?.attributes?.image?.data &&
-                          item?.attributes?.image.data.length > 0
+                        item?.attributes?.image.data.length > 0
                           ? {
-                            images: item.attributes.image.data
-                              .map((img: any) => {
-                                // Check if attributes.value exists
-                                return img.attributes && img.attributes.url
-                                  ? {
-                                    url: img.attributes.url,
-                                  }
-                                  : null; // Return null for categories with missing attributes.value
-                              })
-                              .filter(Boolean), // Remove null values from the array
-                          }
+                              images: item.attributes.image.data
+                                .map((img: any) => {
+                                  // Check if attributes.value exists
+                                  return img.attributes && img.attributes.url
+                                    ? {
+                                        url: img.attributes.url,
+                                      }
+                                    : null; // Return null for categories with missing attributes.value
+                                })
+                                .filter(Boolean), // Remove null values from the array
+                            }
                           : {}),
                       },
                       rateable: true,
                       ...(e.location_id && e.location_id.data
                         ? {
-                          location_ids: [
-                            e?.location_id?.data?.id
-                              ? e?.location_id?.data?.id
-                              : "",
-                          ],
-                        }
+                            location_ids: [
+                              e?.location_id?.data?.id
+                                ? e?.location_id?.data?.id
+                                : "",
+                            ],
+                          }
                         : {}),
                       price: {
                         value: item?.attributes?.sc_retail_product?.data
@@ -709,7 +704,7 @@ export class SearchService {
                         currency: item?.attributes?.sc_retail_product?.data
                           ?.attributes?.currency
                           ? item?.attributes?.sc_retail_product?.data
-                            ?.attributes?.currency
+                              ?.attributes?.currency
                           : "INR",
                       },
                       quantity: {
@@ -717,14 +712,17 @@ export class SearchService {
                           count: item?.attributes?.sc_retail_product?.data
                             ?.attributes?.stock_quantity
                             ? item?.attributes?.sc_retail_product?.data
-                              ?.attributes?.stock_quantity
+                                ?.attributes?.stock_quantity
                             : 0,
                         },
                       },
                       category_ids: item.categories.map((cat: any) =>
                         cat?.id ? cat?.id : ""
                       ),
-                      fulfillment_ids: ["DSEP_FUL_58741444"],
+                      fulfillment_ids: [
+                        item?.attributes?.item_fulfillment_id?.data?.attributes
+                          ?.fulfilment_id?.data?.id,
+                      ],
                       tags: item.tags.map((tag: any) => {
                         return {
                           display: true,
@@ -732,7 +730,7 @@ export class SearchService {
                             description: tag?.attributes?.tag_group_id?.data
                               ?.attributes?.tag_group_name
                               ? tag?.attributes?.tag_group_id?.data?.attributes
-                                ?.tag_group_name
+                                  ?.tag_group_name
                               : "",
                           },
                           list: [
@@ -916,7 +914,7 @@ export class SearchService {
       )
       ${fields}
     }`;
-  
+
     const response = await makeGraphQLRequest(query);
     return response;
   }
@@ -928,9 +926,7 @@ export class SearchService {
   ) {
     const id = filter?.id ? filter.id : "";
     const name = filter?.descriptor?.name ? filter?.descriptor?.name : "";
-    const code = filter?.descriptor?.code
-      ? filter?.descriptor?.code
-      : "";
+    const code = filter?.descriptor?.code ? filter?.descriptor?.code : "";
 
     const x = [
       { key: "id", val: id },
@@ -947,6 +943,7 @@ export class SearchService {
       )
       ${fields}
     }`;
+
     const response = await makeGraphQLRequest(query);
     return response;
   }
@@ -1042,17 +1039,19 @@ export class SearchService {
         {
           taxanomy: { contains:"CAT" } 
           taxanomy_id:{ in: [${catIds
-        .map((str: string) => `"${str.trim()}"`)
-        .join(",")}] }
+            .map((str: string) => `"${str.trim()}"`)
+            .join(",")}] }
           and: [
-            ${filter.item
-        ? "{" + this.generateItemFilterQuery(filter.item) + "},"
-        : ""
-      }
-            ${filter.provider
-        ? "{" + this.generateProviderFilterQuery(filter.provider) + "},"
-        : ""
-      }
+            ${
+              filter.item
+                ? "{" + this.generateItemFilterQuery(filter.item) + "},"
+                : ""
+            }
+            ${
+              filter.provider
+                ? "{" + this.generateProviderFilterQuery(filter.provider) + "},"
+                : ""
+            }
             {${domainFilterQuery}}
           ]
         }

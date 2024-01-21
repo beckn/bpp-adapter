@@ -7,13 +7,10 @@ export const queryFields = `{
       long_desc
       provider_uri
       provider_rating
-      category_ids
-      {
-        data
-        {
+      category_ids {
+        data {
           id
-          attributes
-          {
+          attributes {
             category_code
             value
           }
@@ -44,7 +41,7 @@ export const queryFields = `{
         data {
           id
           attributes {
-            url,
+            url
             size_type
           }
         }
@@ -57,11 +54,10 @@ export const queryFields = `{
             short_desc
             long_desc
             code
-            image{
-              data{
+            image {
+              data {
                 id
-                attributes
-                {
+                attributes {
                   url
                 }
               }
@@ -86,7 +82,7 @@ export const queryFields = `{
                 }
               }
             }
-             cat_attr_tag_relations {
+            cat_attr_tag_relations {
               data {
                 id
                 attributes {
@@ -95,11 +91,40 @@ export const queryFields = `{
                 }
               }
             }
+            item_fulfillment_id
+            {
+              data
+              {
+                id
+                attributes
+                {
+                  fulfilment_id
+                  {
+                    data
+                    {
+                      id
+                      
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      fulfillments{
+        data{
+          id
+          attributes
+          {
+            type
+            rateable
+            rating
           }
         }
       }
     }
   }
-  }`;
+}`;
 
 export const queryTable = "providers";

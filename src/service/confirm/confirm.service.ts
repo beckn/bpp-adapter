@@ -22,7 +22,10 @@ export class ConfirmService {
         const currentDate = new Date();
         const isoString = currentDate.toISOString();
         const billing = filter.message.order.billing;
-        const shipping = filter.message.order.fulfillments[0].stops[0].location;
+        const shipping = filter?.message?.order?.fulfillments[0]?.stops[0]
+          ?.location
+          ? filter?.message?.order?.fulfillments[0]?.stops[0]?.location
+          : billing;
         const billingName = billing?.name ? billing.name : "";
         const billingAddress = billing?.address ? billing?.address : "";
         const billingState = billing?.state?.name
@@ -157,6 +160,26 @@ export class ConfirmService {
         const shippingLocationResponse = await makeGraphQLRequest(
           mutateShippingLocation
         );
+
+        const mutateTrackingDetails = `mutation {
+          createOrderTracking (data:{
+            url:"${config.ADAPTER_BASE_URL}/tracking/${order_id}",
+            status:"active"
+            publishedAt:"${isoString}"
+            
+          })
+          {
+            data
+            {
+              id
+            }
+          }
+        }`;
+        const trackingDetailsResponse = await makeGraphQLRequest(
+          mutateTrackingDetails
+        );
+        const trackingID =
+          trackingDetailsResponse?.data?.createOrderTracking?.data?.id;
         const shippingLocationId =
           shippingLocationResponse.data.createOrderFulfillmentLocation.data.id;
 
@@ -166,6 +189,7 @@ export class ConfirmService {
        order_id:${order_id}
       customer_id:${customerID}
       order_fulfillment_location_id:${shippingLocationId}
+      order_tracking_id:${trackingID}
       publishedAt:"${isoString}"
       
       
@@ -178,6 +202,7 @@ export class ConfirmService {
       }
     }
   }`;
+
         const OrderFulfillmentResponse = await makeGraphQLRequest(
           mutateOrderFulfillment
         );
