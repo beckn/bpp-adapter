@@ -107,7 +107,7 @@ export class WebhookController implements interfaces.Controller {
             //return transformedData;
         } catch (error) {
             const appLogger = new AppLogger();
-            appLogger.error("Error in webhook", error);
+            appLogger.error("Error in webhook", JSON.stringify(error));
             throw error;
         }
     }
