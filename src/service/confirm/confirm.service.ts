@@ -9,7 +9,7 @@ import {
 
 @injectable()
 export class ConfirmService {
-  constructor() {}
+  constructor() { }
 
   async confirm(filter: any) {
     try {
@@ -22,10 +22,7 @@ export class ConfirmService {
         const currentDate = new Date();
         const isoString = currentDate.toISOString();
         const billing = filter.message.order.billing;
-        const shipping = filter?.message?.order?.fulfillments[0]?.stops[0]
-          ?.location
-          ? filter?.message?.order?.fulfillments[0]?.stops[0]?.location
-          : billing;
+        const shipping = (filter?.message?.order?.fulfillments[0]?.stops ? filter?.message?.order?.fulfillments[0]?.stops[0]?.location : undefined) || billing;
         const billingName = billing?.name ? billing.name : "";
         const billingAddress = billing?.address ? billing?.address : "";
         const billingState = billing?.state?.name
@@ -94,7 +91,7 @@ export class ConfirmService {
         );
 
         const custEmail =
-          filter.message.order.fulfillments[0].customer.contact.email;
+          filter.message.order.fulfillments[0].customer?.contact?.email || billing.email;
         appLogger.info("To check the customer email in DB");
 
         const queryCustEmail = `query {
@@ -344,57 +341,57 @@ export class ConfirmService {
             },
             //Add category ids if exists
             ...(category?.data?.categories?.data &&
-            category?.data?.categories?.data.length > 0
+              category?.data?.categories?.data.length > 0
               ? {
-                  category_ids: category?.data?.categories?.data.map(
-                    (cat: any) => cat.id
-                  ),
-                }
+                category_ids: category?.data?.categories?.data.map(
+                  (cat: any) => cat.id
+                ),
+              }
               : {}),
             //Add location id if exists
             ...(res.attributes.provider.data.attributes.location_id &&
-            res.attributes.provider.data.attributes.location_id.data
+              res.attributes.provider.data.attributes.location_id.data
               ? {
-                  location_ids: [
-                    res?.attributes?.provider?.data?.attributes?.location_id
+                location_ids: [
+                  res?.attributes?.provider?.data?.attributes?.location_id
+                    ?.data?.id
+                    ? res?.attributes?.provider?.data?.attributes?.location_id
                       ?.data?.id
-                      ? res?.attributes?.provider?.data?.attributes?.location_id
-                          ?.data?.id
-                      : "",
-                  ],
-                }
+                    : "",
+                ],
+              }
               : {}),
             fulfillment_ids: [res.attributes.item_fulfillment_id.data.id],
             //Add tags if exists
 
             ...(tag?.data?.tags?.data && tag?.data?.tags?.data.length > 0
               ? {
-                  tags: tag.data.tags.data
-                    .map((tg: any) => {
-                      // Check if attributes.value exists
-                      return tg.attributes
-                        ? {
+                tags: tag.data.tags.data
+                  .map((tg: any) => {
+                    // Check if attributes.value exists
+                    return tg.attributes
+                      ? {
+                        display: true,
+                        descriptor: {
+                          name: tg?.attributes?.tag_name
+                            ? tg?.attributes?.tag_name
+                            : "",
+                        },
+                        list: [
+                          {
+                            value: tg?.attributes?.tag_group_id?.data
+                              ?.attributes?.tag_group_name
+                              ? tg?.attributes?.tag_group_id?.data
+                                ?.attributes?.tag_group_name
+                              : "",
                             display: true,
-                            descriptor: {
-                              name: tg?.attributes?.tag_name
-                                ? tg?.attributes?.tag_name
-                                : "",
-                            },
-                            list: [
-                              {
-                                value: tg?.attributes?.tag_group_id?.data
-                                  ?.attributes?.tag_group_name
-                                  ? tg?.attributes?.tag_group_id?.data
-                                      ?.attributes?.tag_group_name
-                                  : "",
-                                display: true,
-                              },
-                            ],
-                          }
-                        : null; // Return null for categories with missing attributes.value
-                    })
-                    .filter(Boolean), // Remove null values from the array
-                }
+                          },
+                        ],
+                      }
+                      : null; // Return null for categories with missing attributes.value
+                  })
+                  .filter(Boolean), // Remove null values from the array
+              }
               : {}),
             price: {
               value: item?.attributes?.sc_retail_product?.data?.attributes
@@ -404,7 +401,7 @@ export class ConfirmService {
               currency: item?.attributes?.sc_retail_product?.data?.attributes
                 ?.currency
                 ? item?.attributes?.sc_retail_product?.data?.attributes
-                    ?.currency
+                  ?.currency
                 : "INR",
             },
           };
@@ -418,7 +415,7 @@ export class ConfirmService {
             currency: response[0]?.attributes?.sc_retail_product?.data
               ?.attributes?.currency
               ? response[0]?.attributes?.sc_retail_product?.data?.attributes
-                  ?.currency
+                ?.currency
               : "INR",
           },
           breakup:
@@ -471,7 +468,7 @@ export class ConfirmService {
                         value: cancelItem?.attributes?.cancel_term_id?.data
                           ?.attributes?.cancellation_fee
                           ? cancelItem?.attributes?.cancel_term_id?.data
-                              ?.attributes?.cancellation_fee
+                            ?.attributes?.cancellation_fee
                           : "",
                       },
                     },
