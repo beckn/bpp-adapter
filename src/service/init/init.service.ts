@@ -1,11 +1,14 @@
 import { injectable } from "inversify";
 import { makeGraphQLRequest } from "../../util/api";
 import config from "../../config";
-import { retailQueryFields, retailQueryTable } from "../../template/retail/init/initItem.template";
+import {
+  retailQueryFields,
+  retailQueryTable,
+} from "../../template/retail/init/initItem.template";
 
 @injectable()
 export class InitService {
-  constructor() { }
+  constructor() {}
 
   async init(filter: any) {
     try {
@@ -84,7 +87,7 @@ export class InitService {
               currency: item?.attributes?.sc_retail_product?.data?.attributes
                 ?.currency
                 ? item?.attributes?.sc_retail_product?.data?.attributes
-                  ?.currency
+                    ?.currency
                 : "INR",
             },
           };
@@ -99,7 +102,7 @@ export class InitService {
             currency: res[0]?.attributes?.sc_retail_product?.data?.attributes
               ?.currency
               ? res[0]?.attributes?.sc_retail_product?.data?.attributes
-                ?.currency
+                  ?.currency
               : "INR",
           },
           breakup:

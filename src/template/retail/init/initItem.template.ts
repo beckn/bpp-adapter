@@ -168,4 +168,4 @@ export const retailQueryFields = `   {
     }
   }
   }`;
-  export const retailQueryTable="items"
+export const retailQueryTable = "items";

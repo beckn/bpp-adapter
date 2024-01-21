@@ -1,18 +1,22 @@
-import { Container } from 'inversify';
+import { Container } from "inversify";
 import "reflect-metadata";
-import { TLService } from '../tl/tl.service';
-import { InversifyExpressServer } from 'inversify-express-utils';
-import { AppLogger } from '../app/app.logger';
-import { HealthController } from '../controller/health/health.controller';
-import { WebhookController } from '../controller/webhook/webhook.controller';
-import { XInputController } from '../controller/x-input/x-input.controller';
-import { SearchService } from '../service/search/search.service';
-import { SelectService } from '../service/select/select.service';
-import { InitService } from '../service/init/init.service';
-import { ConfirmService } from '../service/confirm/confirm.service';
-import { StatusService } from '../service/status/status.service';
-import { XInputService } from '../service/x-input/x-input.service';
-
+import { TLService } from "../tl/tl.service";
+import { InversifyExpressServer } from "inversify-express-utils";
+import { AppLogger } from "../app/app.logger";
+import { HealthController } from "../controller/health/health.controller";
+import { WebhookController } from "../controller/webhook/webhook.controller";
+import { XInputController } from "../controller/x-input/x-input.controller";
+import { SearchService } from "../service/search/search.service";
+import { SelectService } from "../service/select/select.service";
+import { InitService } from "../service/init/init.service";
+import { ConfirmService } from "../service/confirm/confirm.service";
+import { StatusService } from "../service/status/status.service";
+import { XInputService } from "../service/x-input/x-input.service";
+import { SupportService } from "../service/support/support.service";
+import { TrackService } from "../service/track/track.service";
+import { RatingService } from "../service/rating/rating.service";
+import { CancelService } from "../service/cancel/cancel.service";
+import { UpdateService } from "../service/update/update.service";
 
 const container = new Container();
 const server = new InversifyExpressServer(container);
@@ -28,5 +32,10 @@ container.bind<InitService>(InitService).to(InitService);
 container.bind<ConfirmService>(ConfirmService).to(ConfirmService);
 container.bind<StatusService>(StatusService).to(StatusService);
 container.bind<XInputService>(XInputService).to(XInputService);
+container.bind<SupportService>(SupportService).to(SupportService);
+container.bind<TrackService>(TrackService).to(TrackService);
+container.bind<CancelService>(CancelService).to(CancelService);
+container.bind<RatingService>(RatingService).to(RatingService);
+container.bind<UpdateService>(UpdateService).to(UpdateService);
 
 export { server, container };

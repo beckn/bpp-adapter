@@ -102,8 +102,4 @@ export const queryFields = `{
   }
   }`;
 
-export const queryTable="providers"
-
-
-
-
+export const queryTable = "providers";

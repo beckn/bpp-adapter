@@ -1,4 +1,4 @@
- export const queryFieldsCatTax = `
+export const queryFieldsCatTax = `
     {
       data
       {
@@ -95,4 +95,4 @@
       }
     }`;
 
-export const queryTableCatTax="catAttrTagRelations"
+export const queryTableCatTax = "catAttrTagRelations";

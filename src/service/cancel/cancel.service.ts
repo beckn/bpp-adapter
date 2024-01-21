@@ -4,23 +4,27 @@ import config from "../../config";
 import {
   fulfillmentQueryFields,
   fulfillmentQueryTable,
-} from "../../template/retail/status/orderFulfillment.template";
+} from "../../template/retail/cancel/orderFulfillment.template";
 import {
   retailQueryFields,
   retailQueryTable,
-} from "../../template/retail/status/statusItem.template";
+} from "../../template/retail/cancel/cancelItem.template";
+import {
+  mutationFields,
+  mutationTable,
+} from "../../template/retail/cancel/updateFulfillment";
 @injectable()
-export class StatusService {
+export class CancelService {
   constructor() {}
 
-  async status(filter: any) {
+  async cancel(filter: any) {
     try {
       const commerceWorkFlow = config.ECOMMERCE.split(",");
 
       if (commerceWorkFlow.includes(filter.context.domain)) {
         const orderId = filter.message.order_id.toString();
 
-        const orderResponse = await this.statusItem(
+        const orderResponse = await this.cancelItem(
           orderId,
           retailQueryFields,
           retailQueryTable
@@ -30,6 +34,22 @@ export class StatusService {
           fulfillmentQueryFields,
           fulfillmentQueryTable
         );
+        const orderFulfillmentId =
+          orderFulfillmentResponse.orderFulfillments.data[0].id;
+        const updateFulfilmentState = await this.mutateFulfillment(
+          orderFulfillmentId,
+          filter,
+          mutationFields,
+          mutationTable
+        );
+        const fulfillmentStateCode = "CANCELLED";
+        const fulfillmentStatevalue =
+          updateFulfilmentState.updateOrderFulfillment.data.attributes
+            .state_value;
+        const fulfillmentUpdateValue =
+          updateFulfilmentState.updateOrderFulfillment.data.attributes
+            .updatedAt;
+
         const orderFulfillmentDetail =
           orderFulfillmentResponse.orderFulfillments.data;
         const res = orderResponse.orders.data[0].attributes.items.data[0];
@@ -286,12 +306,10 @@ export class StatusService {
               id: data.fulfilment_id.data.id,
               state: {
                 descriptor: {
-                  code: data?.state_code ? data?.state_code : "ITEM PRINTING",
-                  short_desc: data.state_value
-                    ? data?.state_value
-                    : "IN PROGRESS",
+                  code: fulfillmentStateCode,
+                  short_desc: fulfillmentStatevalue,
                 },
-                updated_at: data.updatedAt,
+                updated_at: fulfillmentUpdateValue,
               },
               customer: {
                 contact: {
@@ -389,6 +407,29 @@ export class StatusService {
           phone: billingDetails?.phone ? billingDetails?.phone : "",
           tax_id: billingDetails?.tax_id ? billingDetails?.tax_id : "",
         };
+        const cancelData = response.map((item: any) => {
+          return {
+            cancellation_fee:
+              item.attributes.sc_retail_product.data.attributes.product_cancel.data.map(
+                (cancelItem: any) => {
+                  return {
+                    cancellation_fee: {
+                      amount: {
+                        currency: quoteData?.price?.currency
+                          ? quoteData?.price?.currency
+                          : "INR",
+                        value: cancelItem?.attributes?.cancel_term_id?.data
+                          ?.attributes?.cancellation_fee
+                          ? cancelItem?.attributes?.cancel_term_id?.data
+                              ?.attributes?.cancellation_fee
+                          : "",
+                      },
+                    },
+                  };
+                }
+              )[0] || {},
+          };
+        });
 
         const output: any = {
           context: filter.context,
@@ -401,6 +442,7 @@ export class StatusService {
               billing: billingData,
               payments: paymentData,
               quote: quoteData,
+              cancellation_terms: cancelData,
             },
           },
         };
@@ -411,7 +453,7 @@ export class StatusService {
     }
   }
 
-  private async statusItem(itemValue: any, fields: string, table: string) {
+  private async cancelItem(itemValue: any, fields: string, table: string) {
     const queryFilter = `filters:{id:{in:[${itemValue}]}}`;
     const query = `query {
           ${table} (
@@ -419,6 +461,7 @@ export class StatusService {
           )
           ${fields}
         }`;
+    console.log("QUERY::", query);
     const response = await makeGraphQLRequest(query).then((res) => res.data);
     return response;
   }
@@ -430,6 +473,22 @@ export class StatusService {
   ) {
     const queryFilter = `filters:{order_id:{id:{in:[${itemValue}]}}}`;
     const query = `query {
+          ${table} (
+            ${queryFilter}
+          )
+          ${fields}
+        }`;
+    const response = await makeGraphQLRequest(query).then((res) => res.data);
+    return response;
+  }
+  private async mutateFulfillment(
+    itemValue: any,
+    filter: any,
+    fields: string,
+    table: string
+  ) {
+    const queryFilter = `id:${itemValue},data:{state_code:"CANCELLED",state_value:"${filter.message.descriptor.short_desc}"}`;
+    const query = `mutation {
           ${table} (
             ${queryFilter}
           )
