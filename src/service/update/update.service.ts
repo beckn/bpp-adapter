@@ -35,7 +35,7 @@ export class UpdateService {
           fulfillmentQueryTable
         );
 
-        if (filter.message.updated_target.includes("order.fulfillments[0]")) {
+        if (filter.message.update_target.includes("order.fulfillments[0]")) {
           const customerID =
             orderFulfillmentResponse.orderFulfillments.data[0].attributes
               .customer_id.data.id;
