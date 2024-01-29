@@ -26,7 +26,10 @@ export const startAppServer = async (): Promise<AddressInfo> => {
       methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"]
     })
   );
-  expressApp.use(cors());
+  expressApp.use(cors({
+    origin: "*",
+    methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"]
+  }));
 
   expressApp.use((request, _response, next) => {
     try {
