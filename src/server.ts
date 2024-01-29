@@ -23,6 +23,13 @@ export const startAppServer = async (): Promise<AddressInfo> => {
         methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"]
       })
     );
+
+    expressApp.use(
+      cors({
+        origin: "*",
+        methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"]
+      })
+    );
   });
   expressApp.use(server.build());
 
