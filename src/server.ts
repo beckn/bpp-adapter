@@ -17,16 +17,31 @@ export const startAppServer = async (): Promise<AddressInfo> => {
   });
   expressApp.use(server.build());
 
+  // expressApp.options(
+  //   "*",
+  //   cors({
+  //     origin: "*",
+  //     optionsSuccessStatus: 204,
+  //     credentials: true,
+  //     methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
+  //     allowedHeaders: '*',
+  //     exposedHeaders: '*'
+  //   })
+  // );
+
   expressApp.options(
     "*",
-    cors({
-      origin: "*",
-      optionsSuccessStatus: 204,
-      credentials: true,
-      methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: '*',
-      exposedHeaders: '*'
-    })
+    (
+      _request: express.Request,
+      response: express.Response,
+      _next: express.NextFunction
+    ) => {
+      response
+        .status(201)
+        .send({
+          message: 'Message for options'
+        });
+    }
   );
 
   expressApp.use((request, _response, next) => {
