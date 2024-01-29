@@ -16,6 +16,16 @@ export const startAppServer = async (): Promise<AddressInfo> => {
     expressApp.use(express.urlencoded({ extended: true, limit: "50mb" }));
   });
   expressApp.use(server.build());
+
+  expressApp.options(
+    "*",
+    cors({
+      origin: "*",
+      optionsSuccessStatus: 200,
+      credentials: true,
+      methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"]
+    })
+  );
   expressApp.use(cors());
 
   expressApp.use((request, _response, next) => {
@@ -62,21 +72,21 @@ const handleErrorRoute = (expressApp: express.Application) => {
         .send(
           error instanceof AppError
             ? {
-                success: false,
-                error: true,
-                errorType: error.name,
-                statusCode: error.HTTPStatus,
-                message: error.message,
-              }
+              success: false,
+              error: true,
+              errorType: error.name,
+              statusCode: error.HTTPStatus,
+              message: error.message,
+            }
             : {
-                success: false,
-                error: true,
-                errorType: "internal server error",
-                message: error.message
-                  ? error.message
-                  : "internal server error",
-                statusCode: 500,
-              }
+              success: false,
+              error: true,
+              errorType: "internal server error",
+              message: error.message
+                ? error.message
+                : "internal server error",
+              statusCode: 500,
+            }
         )
         .end();
     }
