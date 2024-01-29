@@ -14,35 +14,17 @@ export const startAppServer = async (): Promise<AddressInfo> => {
   server.setConfig((expressApp) => {
     expressApp.use(express.json({ limit: "50mb" }));
     expressApp.use(express.urlencoded({ extended: true, limit: "50mb" }));
+    expressApp.options(
+      "*",
+      cors({
+        origin: "*",
+        optionsSuccessStatus: 200,
+        credentials: true,
+        methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"]
+      })
+    );
   });
   expressApp.use(server.build());
-
-  // expressApp.options(
-  //   "*",
-  //   cors({
-  //     origin: "*",
-  //     optionsSuccessStatus: 204,
-  //     credentials: true,
-  //     methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
-  //     allowedHeaders: '*',
-  //     exposedHeaders: '*'
-  //   })
-  // );
-
-  expressApp.options(
-    "*",
-    (
-      _request: express.Request,
-      response: express.Response,
-      _next: express.NextFunction
-    ) => {
-      response
-        .status(201)
-        .send({
-          message: 'Message for options'
-        });
-    }
-  );
 
   expressApp.use((request, _response, next) => {
     try {
