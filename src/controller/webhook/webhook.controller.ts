@@ -95,6 +95,10 @@ export class WebhookController implements interfaces.Controller {
                     result = await this.updateService.update(body);
                     responseAction = "on_update";
                     break;
+                default:
+                    const appLogger = new AppLogger();
+                    appLogger.error(`No action matched, action name ${action}`, action);
+                    throw new Error(`No action matched, action name ${action}`);
             }
             let transformedData = {};
             if (responseAction && result) {
