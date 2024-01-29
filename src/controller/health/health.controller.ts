@@ -13,7 +13,7 @@ export class HealthController implements interfaces.Controller {
       uptime: process.uptime(),
       responseTime: process.hrtime(),
       date: new Date(),
-      message: 'CORS issue fix',
+      message: 'CORS issue fix 1',
     };
 
     try {
