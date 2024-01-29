@@ -24,6 +24,8 @@ export const startAppServer = async (): Promise<AddressInfo> => {
       optionsSuccessStatus: 204,
       credentials: true,
       methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: '*',
+      exposedHeaders: '*'
     })
   );
 
