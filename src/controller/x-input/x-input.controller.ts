@@ -41,9 +41,11 @@ export class XInputController implements interfaces.Controller {
       );
       const compiledTemplate = ejs.compile(template);
       const renderedHTML = compiledTemplate({ action: `${config.ADAPTER_BASE_URL}/x-input/submit` });
-      res.setHeader("Content-Type", "text/html");
-      res.write(renderedHTML);
-      return res.status(httpStatus.OK).send();
+      // res.setHeader("Content-Type", "text/html");
+      // res.write(renderedHTML);
+      return res.status(httpStatus.OK).send({
+        textHtml: renderedHTML
+      });
     } catch (error) {
       return res.status(httpStatus.SERVICE_UNAVAILABLE).send();
     }
