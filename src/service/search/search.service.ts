@@ -642,7 +642,7 @@ export class SearchService {
                     : {}),
                   fulfillments: e.fulfillments.data.map((data: any) => {
                     return {
-                      id: data?.id,
+                      id: data?.id.toString(),
                       type: data.attributes.type,
                       rating: data?.attributes?.rating.toString()
                         ? data?.attributes?.rating.toString()
